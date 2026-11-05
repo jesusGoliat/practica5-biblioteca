@@ -1,0 +1,6 @@
+{
+  "API_BASE_URL": "https://tu-tunel.trycloudflare.com",
+  "ALLOW_HTTP": "false",
+  "GOOGLE_WEB_CLIENT_ID": "tu-web-client-id.apps.googleusercontent.com",
+  "GOOGLE_IOS_CLIENT_ID": "tu-ios-client-id.apps.googleusercontent.com"
+}
