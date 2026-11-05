@@ -8,3 +8,16 @@ CLAUDE.md
 comandos_docker.txt
 Requisitos_Practica2.pdf
 ACTIVIDADES_FALTANTES.md
+Practica5.pdf
+LECCIONES_APRENDIDAS.md
+*.pdf
+
+# Secretos y configuración local (nunca subir tokens ni contraseñas)
+.env
+**/.env
+dart_defines.local.json
+dart_defines.*.json
+!dart_defines.example.json
+google-services.json
+GoogleService-Info.plist
+

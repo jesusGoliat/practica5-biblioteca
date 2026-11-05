@@ -1,32 +1,52 @@
 services:
   postgres:
     image: postgres:17
-    container_name: practica2_postgres
+    container_name: practica5_postgres
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-practica5}
+      POSTGRES_USER: ${POSTGRES_USER:-practica5_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-practica5_pass}
     ports:
       - "5432:5432"
     volumes:
-      - ./data:/var/lib/postgresql/data
+      - practica5_pgdata:/var/lib/postgresql/data
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-practica5_user} -d ${POSTGRES_DB:-practica5}"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   backend:
     build: .
-    container_name: practica2_backend
+    container_name: practica5_backend
     environment:
-      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES}
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-practica5_user}:${POSTGRES_PASSWORD:-practica5_pass}@postgres:5432/${POSTGRES_DB:-practica5}
+      JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en backend/.env}
+      JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES:-1440}
+      GOOGLE_CLIENT_IDS: ${GOOGLE_CLIENT_IDS:-}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@biblioteca.test}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin12345!}
+      ADMIN_NAME: ${ADMIN_NAME:-Administrador ESCOM}
     ports:
       - "8000:8000"
     depends_on:
       postgres:
         condition: service_healthy
     restart: unless-stopped
+
+  # Perfil opcional para exponer la API por HTTPS sin cuentas ni certificados
+  # instalados en el teléfono:
+  #   docker compose --profile tunnel up -d
+  #   docker compose logs cloudflared | grep trycloudflare
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: practica5_cloudflared
+    command: tunnel --no-autoupdate --url http://backend:8000
+    depends_on:
+      - backend
+    profiles: ["tunnel"]
+    restart: unless-stopped
+
+volumes:
+  practica5_pgdata:
