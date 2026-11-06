@@ -30,7 +30,7 @@
 | Campo | Valor |
 |---|---|
 | SHA base de referencia | `79c6cde` (último commit antes de la UI de la Práctica 5) |
-| SHA probado | Primera pasada: `0a56210`. Correcciones y repetición de casos afectados: `b422309` y `7e038ca` (APK final). Commits posteriores sólo cambian documentación y evidencias. |
+| SHA probado | Primera pasada: `0a56210`. Correcciones y repetición de casos afectados: `b422309` y `7e038ca` (APK final). Commits posteriores: documentación, evidencias, CI de iOS y compatibilidad de iOS (`connectivity_plus` fijado en 7.0.0 y sin `Podfile` manual). |
 | Autor de la ejecución | Jesús Ángel González Arellano (`jesusGoliat`), con asistencia de Claude Code para guiar el guion y tomar las capturas por `adb` |
 | Fecha | 2026-11-05, 21:48 a 22:35 (hora del dispositivo) |
 | Equipo de desarrollo | Linux, Flutter 3.47.6, JDK 21, Docker 29.8 / Compose |
