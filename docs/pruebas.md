@@ -100,15 +100,40 @@ duplicados (también demostrada contra el backend), aislamiento entre cuentas, r
 de administrador con 403 y manejo de errores sin cierres. Se encontraron y
 corrigieron 8 defectos; el comportamiento antes y después está en las capturas.
 
-Riesgos que quedan: (1) Google Sign-In probado sólo en Android, no en iOS; (2) pruebas
-de iOS sujetas a la ejecución del workflow (sección 8); (3) TalkBack real y APK
+Riesgos que quedan: (1) Google Sign-In probado sólo en Android, no en iOS; (2) iOS se ejecutó
+sólo con el recorrido automático (sección 8), sin sincronización sin conexión ni accesibilidad; (3) TalkBack real y APK
 release no ejecutados; (4) D-09 en horizontal.
 
 ## 8. Resultados en iOS
 
-_Se llenan con la ejecución de `codemagic.yaml` (o, como respaldo, de
-`.github/workflows/ios.yml`); si no se logra ejecutar, se declara aquí como
-bloqueado y no se reporta como probado._
+Ejecutado en **Codemagic** (`mac_mini_m2`, workflow `ios-biblioteca-capturas`, build 3,
+commit `ec055b5`) con el recorrido automático `integration_test/evidencia_test.dart`
+en un **simulador iPhone Air** (macOS 26.5.1, Xcode 26.6, Flutter 3.47.6; ver
+`evidencias/ios-dispositivo.txt`). El backend corrió en el mismo runner con SQLite y
+cuentas efímeras. El artefacto contiene 14 capturas y la verificación de roles. La
+versión de iOS del simulador no quedó registrada en `dispositivo.txt`.
+
+| Caso | Cobertura en iOS | Estado | Evidencia |
+|---|---|---|---|
+| P-01 | Registro, alta de un libro y estado «Leyendo». No se probó la baja ni la calificación. | Parcial | [02](img/ios/02-registro.png) [06](img/ios/06-favorito-y-biblioteca.png) [07](img/ios/07-biblioteca.png) |
+| P-02 | Búsqueda «dune» (48 281 resultados) y detalle con descripción. | Aprobado | [04](img/ios/04-resultados-busqueda.png) [05](img/ios/05-detalle-libro.png) |
+| P-05 | Se marcó el favorito y aparece en la lista. No se cerró y reabrió la app. | Parcial | [08](img/ios/08-favoritos.png) |
+| P-06 | Recomendaciones del caso sin historial (se generaron al entrar, antes de tener favoritos), con autores y motivo. | Aprobado (caso sin datos) | [09](img/ios/09-recomendaciones.png) |
+| Historial | Historial de búsquedas visible tras limpiar el campo. | Aprobado | [10](img/ios/10-historial.png) |
+| Perfil y cierre de sesión | Perfil con sincronización y cierre de sesión. | Aprobado | [11](img/ios/11-perfil-sincronizacion.png) [12](img/ios/12-sesion-cerrada.png) |
+| P-14 | Panel de administración con la cuenta admin, lista de usuarios y detalle. Backend: cuenta normal **403**, administrador **200**. | Aprobado | [13](img/ios/13-admin-usuarios.png) [14](img/ios/14-admin-detalle-usuario.png) · `evidencias/ios-15-autorizacion-admin.txt` |
+| P-03, P-07, P-08, P-09, P-10, P-11, P-13 | No se ejecutaron en iOS (sin modo avión, rotación ni TalkBack en el simulador del CI). | No ejecutado | — |
+| P-04 | **Google Sign-In en iOS no se probó**: el ingreso es interactivo y el CI no tiene el client ID de iOS. | No ejecutado | — |
+
+Observaciones sobre las capturas (son de sincronización del recorrido, no defectos de
+la app):
+- En la 04 las portadas aún no habían cargado cuando se tomó la captura.
+- La 13 se tomó a mitad de la animación de cambio de pantalla y se ve el perfil
+  desplazado a la izquierda.
+- Un primer intento falló en GitHub Actions por una dependencia que exige el SDK de
+  iOS 26 (`connectivity_plus` 7.1 o superior) y en Codemagic por un `Podfile` manual
+  que forzaba CocoaPods con plugins que ya eran Swift Packages; ambos se corrigieron
+  (`d730775` y `771063f`).
 
 ## 9. Contribuciones y herramientas
 

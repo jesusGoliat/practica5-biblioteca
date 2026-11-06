@@ -211,8 +211,31 @@ Todas las capturas son de un **Xiaomi 25062PC34G, Android 16**, tomadas con
 Evidencia adicional en texto: [`docs/evidencias/`](docs/evidencias/) (idempotencia de
 `/sync`, 403 de administración, baja lógica en el servidor, etiquetas de accesibilidad).
 
-**iOS:** las capturas del simulador se generan con el workflow de CI; su estado real
-(ejecutado o bloqueado) está en la sección 8 de [`docs/pruebas.md`](docs/pruebas.md).
+### iOS (simulador iPhone Air, Codemagic)
+
+Capturas del recorrido automático en un simulador iPhone Air (Xcode 26.6, runner Mac M2
+de Codemagic). Cobertura exacta y límites en la sección 8 de
+[`docs/pruebas.md`](docs/pruebas.md): Google Sign-In, la prueba sin conexión y la
+accesibilidad no se ejecutaron en iOS.
+
+**Búsqueda pública en iOS: 48 281 resultados**
+
+![iOS: resultados](docs/img/ios/04-resultados-busqueda.png)
+
+**Detalle con favorito y estado «Leyendo» en iOS**
+
+![iOS: detalle](docs/img/ios/06-favorito-y-biblioteca.png)
+
+**Recomendaciones en iOS (caso sin historial)**
+
+![iOS: recomendaciones](docs/img/ios/09-recomendaciones.png)
+
+**Panel de administración en iOS**
+
+![iOS: administración](docs/img/ios/13-admin-usuarios.png)
+
+Verificación de roles en el runner: cuenta normal **403**, administrador **200**
+([`docs/evidencias/ios-15-autorizacion-admin.txt`](docs/evidencias/ios-15-autorizacion-admin.txt)).
 
 ---
 

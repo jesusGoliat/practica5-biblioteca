@@ -1,0 +1,7 @@
+    iPhone Air (D74E6CFA-DDEF-484C-9BCB-6575CBD44F29) (Booted) 
+ProductName:		macOS
+ProductVersion:		26.5.1
+BuildVersion:		25F80
+Xcode 26.6
+Build version 17F113
+Flutter 3.47.6 • channel stable • https://github.com/flutter/flutter.git
