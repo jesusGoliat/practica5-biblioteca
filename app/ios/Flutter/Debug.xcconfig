@@ -1,1 +1,7 @@
 #include "Generated.xcconfig"
+
+// Valores por defecto; se sobrescriben en Secrets.xcconfig (no se versiona).
+GOOGLE_IOS_CLIENT_ID=
+GOOGLE_IOS_REVERSED_CLIENT_ID=com.googleusercontent.apps.sin-configurar
+GOOGLE_WEB_CLIENT_ID=
+#include? "Secrets.xcconfig"

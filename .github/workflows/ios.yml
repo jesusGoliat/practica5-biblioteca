@@ -1,0 +1,101 @@
+name: iOS (simulador + evidencias)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['app/**', 'backend/**', '.github/workflows/ios.yml', 'tools/**']
+
+jobs:
+  ios:
+    runs-on: macos-15
+    timeout-minutes: 75
+    env:
+      API_BASE_URL: http://127.0.0.1:8000
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Backend local (SQLite) con cuentas efímeras de CI
+        working-directory: backend
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install -r requirements.txt
+          echo "JWT_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+          echo "ADMIN_EMAIL=admin-ci@biblioteca.test" >> "$GITHUB_ENV"
+          echo "ADMIN_PASSWORD=$(openssl rand -hex 12)" >> "$GITHUB_ENV"
+          echo "DEMO_EMAIL=alumno-ci@biblioteca.test" >> "$GITHUB_ENV"
+          echo "DEMO_PASSWORD=$(openssl rand -hex 12)" >> "$GITHUB_ENV"
+          echo "DATABASE_URL=sqlite:///./ci.db" >> "$GITHUB_ENV"
+
+      - name: Arrancar backend
+        working-directory: backend
+        run: |
+          .venv/bin/python -m app.bootstrap_admin
+          nohup .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 > uvicorn.log 2>&1 &
+          for i in $(seq 1 30); do curl -fs http://127.0.0.1:8000/health && break || sleep 1; done
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.6'
+          channel: stable
+          cache: true
+
+      - name: Dependencias, análisis y pruebas
+        working-directory: app
+        run: |
+          flutter pub get
+          flutter analyze
+          flutter test
+
+      - name: Arrancar simulador
+        run: |
+          UDID=$(python3 tools/elegir_simulador.py)
+          echo "SIMULATOR_UDID=$UDID" >> "$GITHUB_ENV"
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100 --wifiBars 3 --cellularBars 4
+          xcrun simctl ui "$UDID" appearance light
+          xcrun simctl list devices | grep "$UDID" > app/dispositivo.txt || true
+          sw_vers >> app/dispositivo.txt; xcodebuild -version >> app/dispositivo.txt
+
+      - name: Recorrido con capturas (flutter drive)
+        working-directory: app
+        run: |
+          rm -rf screenshots
+          flutter drive \
+            --driver=test_driver/integration_test.dart \
+            --target=integration_test/evidencia_test.dart \
+            -d "$SIMULATOR_UDID" \
+            --dart-define=API_BASE_URL=$API_BASE_URL \
+            --dart-define=DEMO_EMAIL=$DEMO_EMAIL \
+            --dart-define=DEMO_PASSWORD=$DEMO_PASSWORD \
+            --dart-define=ADMIN_EMAIL=$ADMIN_EMAIL \
+            --dart-define=ADMIN_PASSWORD=$ADMIN_PASSWORD
+
+      - name: Autorización de administrador (403 con cuenta normal)
+        run: |
+          {
+            echo "# Verificación de rol administrador (backend)"
+            TOKEN=$(curl -s -X POST http://127.0.0.1:8000/auth/login -H 'Content-Type: application/json' \
+              -d "{\"username\":\"$DEMO_EMAIL\",\"password\":\"$DEMO_PASSWORD\"}" | python3 -c 'import sys,json;print(json.load(sys.stdin)["access_token"])')
+            echo "GET /admin/users con cuenta normal -> HTTP $(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/admin/users)"
+            ATOKEN=$(curl -s -X POST http://127.0.0.1:8000/auth/login -H 'Content-Type: application/json' \
+              -d "{\"username\":\"$ADMIN_EMAIL\",\"password\":\"$ADMIN_PASSWORD\"}" | python3 -c 'import sys,json;print(json.load(sys.stdin)["access_token"])')
+            echo "GET /admin/users con administrador -> HTTP $(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $ATOKEN" http://127.0.0.1:8000/admin/users)"
+          } | tee app/screenshots/15-autorizacion-admin.txt
+
+      - name: Verificar que hay capturas
+        run: test "$(ls app/screenshots/*.png | wc -l)" -ge 12
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ios-evidencias
+          path: |
+            app/screenshots/**
+            app/dispositivo.txt
+            backend/uvicorn.log
