@@ -26,7 +26,7 @@ services:
       JWT_EXPIRE_MINUTES: ${JWT_EXPIRE_MINUTES:-1440}
       GOOGLE_CLIENT_IDS: ${GOOGLE_CLIENT_IDS:-}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@biblioteca.test}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin12345!}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Define ADMIN_PASSWORD en backend/.env}
       ADMIN_NAME: ${ADMIN_NAME:-Administrador ESCOM}
     ports:
       - "8000:8000"
