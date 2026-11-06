@@ -1,29 +1,40 @@
 workflows:
-  ios-evidencias:
-    name: iOS - evidencias en simulador
+  ios-biblioteca-capturas:
+    name: iOS Biblioteca - capturas de evidencia
     instance_type: mac_mini_m2
     max_build_duration: 60
     environment:
-      flutter: stable
-      xcode: latest
+      flutter: 3.47.6
     scripts:
-      - name: Informacion del entorno
-        script: |
-          flutter --version
-          xcodebuild -version
-          python3 --version
-
-      - name: Dependencias, analisis y pruebas
+      - name: Dependencias
         working_directory: app
-        script: |
-          flutter pub get
-          flutter analyze
-          flutter test
+        script: flutter pub get
 
-      - name: Backend local, simulador y recorrido con capturas
+      - name: Analisis estatico
+        working_directory: app
+        script: flutter analyze
+
+      - name: Pruebas unitarias y de widgets
+        working_directory: app
+        script: flutter test
+
+      - name: Arrancar simulador
+        script: |
+          UDID=$(python3 tools/elegir_simulador.py)
+          echo "Simulador elegido: $UDID"
+          echo "SIMULATOR_UDID=$UDID" >> $CM_ENV
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl status_bar "$UDID" override \
+            --time "9:41" --batteryState charged --batteryLevel 100 \
+            --wifiBars 3 --cellularBars 4
+          xcrun simctl ui "$UDID" appearance light
+          { xcrun simctl list devices | grep "$UDID"; sw_vers; xcodebuild -version; flutter --version | head -1; } > app/dispositivo.txt || true
+
+      - name: Backend local (SQLite) y recorrido de integracion con capturas
         script: |
           set -e
-          # Cuentas efimeras del CI (no son secretos reales; viven sólo en este runner).
+          # Cuentas efimeras del CI: no son secretos reales, viven solo en este runner.
           export JWT_SECRET="$(openssl rand -hex 32)"
           export ADMIN_EMAIL="admin-ci@biblioteca.test"
           export ADMIN_PASSWORD="$(openssl rand -hex 12)"
@@ -31,7 +42,6 @@ workflows:
           export DEMO_PASSWORD="$(openssl rand -hex 12)"
           export DATABASE_URL="sqlite:///./ci.db"
 
-          # Backend (FastAPI + SQLite)
           cd "$CM_BUILD_DIR/backend"
           python3 -m venv .venv
           .venv/bin/pip install -r requirements.txt
@@ -39,29 +49,18 @@ workflows:
           nohup .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 > uvicorn.log 2>&1 &
           for i in $(seq 1 30); do curl -fs http://127.0.0.1:8000/health && break || sleep 1; done
 
-          # Simulador iPhone
-          cd "$CM_BUILD_DIR"
-          UDID=$(python3 tools/elegir_simulador.py)
-          xcrun simctl boot "$UDID" || true
-          xcrun simctl bootstatus "$UDID" -b
-          xcrun simctl status_bar "$UDID" override --time "9:41" --batteryState charged --batteryLevel 100 --wifiBars 3 --cellularBars 4
-          xcrun simctl ui "$UDID" appearance light
-          { xcrun simctl list devices | grep "$UDID"; sw_vers; xcodebuild -version; flutter --version | head -1; } > app/dispositivo.txt || true
-
-          # Recorrido de integracion con capturas
           cd "$CM_BUILD_DIR/app"
           rm -rf screenshots
           flutter drive \
             --driver=test_driver/integration_test.dart \
             --target=integration_test/evidencia_test.dart \
-            -d "$UDID" \
+            -d "$SIMULATOR_UDID" \
             --dart-define=API_BASE_URL=http://127.0.0.1:8000 \
             --dart-define=DEMO_EMAIL="$DEMO_EMAIL" \
             --dart-define=DEMO_PASSWORD="$DEMO_PASSWORD" \
             --dart-define=ADMIN_EMAIL="$ADMIN_EMAIL" \
             --dart-define=ADMIN_PASSWORD="$ADMIN_PASSWORD"
 
-          # Autorizacion de administrador: 403 con cuenta normal
           {
             echo "# Verificacion de rol administrador (backend en el runner)"
             TOKEN=$(curl -s -X POST http://127.0.0.1:8000/auth/login -H 'Content-Type: application/json' \
@@ -73,8 +72,7 @@ workflows:
           } | tee screenshots/15-autorizacion-admin.txt
 
       - name: Verificar que hay capturas
-        script: |
-          test "$(ls $CM_BUILD_DIR/app/screenshots/*.png | wc -l)" -ge 12
+        script: test "$(ls $CM_BUILD_DIR/app/screenshots/*.png | wc -l)" -ge 12
 
     artifacts:
       - app/screenshots/**
