@@ -152,61 +152,61 @@ Todas las capturas son de un **Xiaomi 25062PC34G, Android 16**, tomadas con
 
 **Registro de una cuenta nueva (P-01)**
 
-![Formulario de registro](docs/img/android/02-p01-registro-formulario.png)
+<img src="docs/img/android/02-p01-registro-formulario.png" alt="Formulario de registro" width="260">
 
 **Búsqueda pública en Open Library: 48 281 resultados en 0.8 s (P-02)**
 
-![Resultados de búsqueda](docs/img/android/04-p02-resultados-dune.png)
+<img src="docs/img/android/04-p02-resultados-dune.png" alt="Resultados de búsqueda" width="260">
 
 **Detalle de un libro con descripción real (P-02)**
 
-![Detalle del libro](docs/img/android/05-p02-detalle-dune.png)
+<img src="docs/img/android/05-p02-detalle-dune.png" alt="Detalle del libro" width="260">
 
 **Favorito, estado «Leyendo» y calificación de 4 estrellas (P-01)**
 
-![Favorito y biblioteca](docs/img/android/06-p01-favorito-biblioteca-calificacion.png)
+<img src="docs/img/android/06-p01-favorito-biblioteca-calificacion.png" alt="Favorito y biblioteca" width="260">
 
 **Favoritos conservados tras cerrar y abrir la app (P-05)**
 
-![Favoritos tras reinicio](docs/img/android/07-p05-favoritos-tras-reinicio.png)
+<img src="docs/img/android/07-p05-favoritos-tras-reinicio.png" alt="Favoritos tras reinicio" width="260">
 
 **Recomendaciones con criterio y motivo por libro (P-06)**
 
-![Recomendaciones](docs/img/android/09-p06-recomendaciones-despues.png)
+<img src="docs/img/android/09-p06-recomendaciones-despues.png" alt="Recomendaciones" width="260">
 
 **Consulta sin conexión: resultados guardados con su fecha (P-07)**
 
-![Búsqueda sin conexión](docs/img/android/31-p07-busqueda-sin-conexion-con-fecha.png)
+<img src="docs/img/android/31-p07-busqueda-sin-conexion-con-fecha.png" alt="Búsqueda sin conexión" width="260">
 
 **Cambios hechos sin conexión quedan pendientes (P-08)**
 
-![Cambios pendientes](docs/img/android/11-p08-cambios-pendientes-sin-conexion.png)
+<img src="docs/img/android/11-p08-cambios-pendientes-sin-conexion.png" alt="Cambios pendientes" width="260">
 
 **Al reconectar se sincroniza solo y sin duplicados (P-08)**
 
-![Sincronizado](docs/img/android/12-p08-sincronizado-tras-reconexion.png)
+<img src="docs/img/android/12-p08-sincronizado-tras-reconexion.png" alt="Sincronizado" width="260">
 
 **Servidor caído: error visible y cambio pendiente (P-03)**
 
-![Servidor caído](docs/img/android/29-p03-servidor-caido-pendientes.png)
+<img src="docs/img/android/29-p03-servidor-caido-pendientes.png" alt="Servidor caído" width="260">
 
 **Una cuenta nueva no ve los datos de otra (P-10)**
 
-![Aislamiento entre cuentas](docs/img/android/16-p10-cuenta-b-favoritos-vacios.png)
+<img src="docs/img/android/16-p10-cuenta-b-favoritos-vacios.png" alt="Aislamiento entre cuentas" width="260">
 
 **Rol administrador: usuarios con sus contadores (P-14)**
 
-![Panel de administración](docs/img/android/21-p14-admin-despues-correccion.png)
+<img src="docs/img/android/21-p14-admin-despues-correccion.png" alt="Panel de administración" width="260">
 
 **Inicio de sesión con Google validado por el backend (P-04)**
 
-![Selector de Google](docs/img/android/36-p04-google-pantalla-1.png)
+<img src="docs/img/android/36-p04-google-pantalla-1.png" alt="Selector de Google" width="260">
 
-![Sesión iniciada con Google](docs/img/android/38-p04-google-perfil.png)
+<img src="docs/img/android/38-p04-google-perfil.png" alt="Sesión iniciada con Google" width="260">
 
 **Texto ampliado (escala 1.45) en Perfil (P-11)**
 
-![Texto ampliado](docs/img/android/22-p11-texto-ampliado-perfil.png)
+<img src="docs/img/android/22-p11-texto-ampliado-perfil.png" alt="Texto ampliado" width="260">
 
 Evidencia adicional en texto: [`docs/evidencias/`](docs/evidencias/) (idempotencia de
 `/sync`, 403 de administración, baja lógica en el servidor, etiquetas de accesibilidad).
@@ -219,19 +219,19 @@ de Codemagic). Detalle de lo cubierto en la sección 8 de
 
 **Búsqueda pública en iOS: 48 281 resultados**
 
-![iOS: resultados](docs/img/ios/04-resultados-busqueda.png)
+<img src="docs/img/ios/04-resultados-busqueda.png" alt="iOS: resultados" width="260">
 
 **Detalle con favorito y estado «Leyendo» en iOS**
 
-![iOS: detalle](docs/img/ios/06-favorito-y-biblioteca.png)
+<img src="docs/img/ios/06-favorito-y-biblioteca.png" alt="iOS: detalle" width="260">
 
 **Recomendaciones en iOS (caso sin historial)**
 
-![iOS: recomendaciones](docs/img/ios/09-recomendaciones.png)
+<img src="docs/img/ios/09-recomendaciones.png" alt="iOS: recomendaciones" width="260">
 
 **Panel de administración en iOS**
 
-![iOS: administración](docs/img/ios/13-admin-usuarios.png)
+<img src="docs/img/ios/13-admin-usuarios.png" alt="iOS: administración" width="260">
 
 Verificación de roles en el runner: cuenta normal **403**, administrador **200**
 ([`docs/evidencias/ios-15-autorizacion-admin.txt`](docs/evidencias/ios-15-autorizacion-admin.txt)).
