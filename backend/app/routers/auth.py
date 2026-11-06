@@ -59,12 +59,12 @@ def login(payload: UserLogin, session: Session = Depends(get_session)):
     if not user or not user.hashed_password:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Usuario o contrasena incorrectos",
+            detail="Usuario o contraseña incorrectos",
         )
     if not verify_password(payload.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Usuario o contrasena incorrectos",
+            detail="Usuario o contraseña incorrectos",
         )
 
     token, expires_in = create_access_token(user)

@@ -51,9 +51,17 @@ class ProfileScreen extends StatelessWidget {
             '${sync.status.lastError == null ? '' : '\nError: ${sync.status.lastError}'}',
           ),
           isThreeLine: true,
-          trailing: TextButton(
-            onPressed: sync.online ? sync.syncNow : null,
-            child: const Text('Sincronizar'),
+        ),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 56),
+            child: TextButton.icon(
+              key: const Key('sync-now'),
+              icon: const Icon(Icons.sync),
+              label: const Text('Sincronizar ahora'),
+              onPressed: sync.online ? sync.syncNow : null,
+            ),
           ),
         ),
         if (user.isAdmin)

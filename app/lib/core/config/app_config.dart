@@ -34,11 +34,13 @@ class AppConfig {
   static bool get hasGoogleIos => googleIosClientId.isNotEmpty;
 
   /// En release sólo se permite HTTPS para la comunicación remota.
-  static void validate() {
-    if (kReleaseMode && !apiBaseUrl.startsWith('https://')) {
+  static void validate({bool? release, String? url}) {
+    final isRelease = release ?? kReleaseMode;
+    final target = url ?? apiBaseUrl;
+    if (isRelease && !target.startsWith('https://')) {
       throw StateError(
         'En release API_BASE_URL debe usar HTTPS. '
-        'Recibido: $apiBaseUrl',
+        'Recibido: $target',
       );
     }
   }

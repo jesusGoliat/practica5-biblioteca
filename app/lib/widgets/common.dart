@@ -149,7 +149,7 @@ class SyncBanner extends StatelessWidget {
               child: Text(
                 parts.join(' · '),
                 style: Theme.of(context).textTheme.bodySmall,
-                maxLines: 2,
+                maxLines: 4,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
