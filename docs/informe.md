@@ -112,12 +112,38 @@ guarda el motivo que se muestra en pantalla. Se persisten para consultarlas sin 
 
 ## 8. Resultados
 
-_Se completan con las evidencias reales: ver `docs/pruebas.md` (matriz) y las
-capturas en `docs/img/android/` y `docs/img/ios/`._
+La matriz completa está en [`pruebas.md`](pruebas.md). En un Xiaomi 25062PC34G con
+Android 16 (API 36) se ejecutaron 14 casos: 11 aprobados, 2 parciales (accesibilidad
+sin TalkBack y verificación estática de HTTPS en release) y 1 bloqueado (Google
+Sign-In, por falta de client IDs). Resultados destacados:
+
+- Búsqueda pública: 48 281 resultados en 0.8 s con portada, autor y año; detalle con
+  descripción real.
+- Sin conexión: resultados guardados con su fecha, favoritos y biblioteca locales.
+- Sincronización: dos cambios hechos en modo avión quedaron como pendientes, se
+  enviaron una sola vez al reconectar y el servidor quedó sin duplicados; reenviar el
+  mismo `op_id` devolvió `duplicate`.
+- Servidor caído: error visible, cambio pendiente y recuperación automática con los
+  reintentos al volver el servidor.
+- Seguridad: la cuenta normal recibió 403 en `/admin/users`; cada cuenta vio sólo sus
+  datos.
+- Se encontraron y corrigieron 8 defectos durante las pruebas (ver sección 6 de
+  `pruebas.md`), con capturas del antes y el después.
+- Automáticas: 18 pruebas del backend y 15 de Flutter, más `flutter analyze` limpio.
+
+Resultados de iOS: ver la sección 8 de `pruebas.md`.
 
 ## 9. Conclusiones
 
-_Se redactan en primera persona después de ejecutar las pruebas._
+La parte más delicada fue la sincronización: guardar una copia local es sencillo,
+pero decidir qué ocurre con los cambios hechos sin red exige identificadores del
+cliente, una cola reenviable sin duplicar y una regla clara de conflictos. Aislar esa
+lógica en un repositorio local-first permitió probarla con SQLite en memoria sin
+dispositivo. Las pruebas guiadas en un celular real encontraron defectos que las
+pruebas automáticas no veían (autores faltantes, fechas desfasadas por la zona
+horaria, historial con fragmentos tecleados), por lo que ambas son necesarias.
+Limitaciones: Google Sign-In no pudo probarse, TalkBack y el APK release no se
+ejecutaron en el dispositivo, y la evidencia de iOS depende del workflow de CI.
 
 ## 10. Herramientas de IA utilizadas
 

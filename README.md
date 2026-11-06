@@ -1,314 +1,328 @@
-# Practica 2 — Aplicacion movil basica para operaciones CRUD con un servicio REST
+# Práctica 5 — Biblioteca ESCOM: consulta de APIs y funciones específicas en Android e iOS
 
-## Portada
-
-- **Nombre completo:** Jesús Ángel González Arellano
-- **Número de boleta:** 2022630690
-- **Grupo:** 7CV4
-- **Asignatura:** Desarrollo de aplicaciones móviles nativas
-- **Profesor(a):** Gabriel Hurtado Avilés
-- **Fecha de entrega:** 18 de septiembre de 2026
+[English version below](#english)
 
 ---
 
-## Introduccion
+## Portada
 
-Esta practica consiste en una aplicacion movil Android (Kotlin + Jetpack Compose)
-que consume un servicio REST propio para autenticar usuarios y administrar un
-recurso de **Tareas** mediante las cuatro operaciones CRUD (crear, leer, actualizar,
-borrar). El objetivo es demostrar el ciclo completo cliente-servidor: una app movil
-real hablando con un backend dockerizado, con contrasenas hasheadas y sesiones
-protegidas por JWT.
+- **Nombre:** Jesús Ángel González Arellano
+- **Boleta:** 2022630690
+- **Grupo:** 7CV4
+- **Asignatura:** Desarrollo de aplicaciones móviles nativas
+- **Profesor:** Gabriel Hurtado Avilés
+- **Fecha de entrega:** viernes 6 de noviembre de 2026
 
-### Stack elegido y justificacion
+---
 
-| Componente        | Eleccion                                   | Justificacion |
-|--------------------|---------------------------------------------|----------------|
-| Backend            | **FastAPI** (Python 3.12)                   | Se eligio FastAPI por su tipado con Pydantic (validacion de datos de entrada en tiempo de ejecucion, con errores 422 automaticos ante datos malformados), generacion automatica de documentacion interactiva (`/docs`) que facilita probar los endpoints, y soporte nativo de `async`/`await` para manejar peticiones HTTP de forma eficiente. |
-| ORM                 | **SQLModel** (sobre SQLAlchemy 2.0)         | Combina la validacion de Pydantic con el mapeo objeto-relacional de SQLAlchemy en una sola clase de modelo, reduciendo codigo duplicado entre el esquema de la base de datos  |
-| Base de datos       | **PostgreSQL 17** (dockerizado)             | Motor relacional cliente-servidor robusto, con soporte maduro para transacciones y conexiones concurrentes; se dockerizo como un servicio independiente en `docker-compose.yml` , separado del backend pero conectado a el por una red interna de Docker, tal como exige el enunciado para el manejo de la persistencia. |
-| Hash de contrasenas | **Argon2** (`argon2-cffi`)                   | Resistente a ataques por fuerza bruta acelerados por GPU/ASIC gracias a su costo de memoria configurable.  |
-| Sesiones            | **JWT firmado** (`PyJWT`, HS256) con expiracion | Token stateless que el backend puede validar sin consultar una tabla de sesiones en cada peticion; firmado con un secreto que nunca se sube al repositorio (`JWT_SECRET` por variable de entorno) y con expiracion configurable para limitar el tiempo de validez de una sesion robada. |
-| App movil           | **Kotlin + Jetpack Compose (Material 3)**   | Compose permite describir la interfaz de forma declarativa directamente en Kotlin, reduciendo la cantidad de codigo necesario para las 4 pantallas de la practica frente a un enfoque imperativo. |
-| Cliente HTTP        | **Retrofit + OkHttp**                        | Cliente HTTP estandar en el ecosistema Android; permite declarar los endpoints del backend como una interfaz de Kotlin y agregar un interceptor que inyecta automaticamente el token JWT en cada peticion protegida. |
+## Estructura del repositorio
+
+```text
+practica5-biblioteca/
+├── app/                  Cliente Flutter único para Android e iOS (Práctica 5)
+│   ├── lib/core/         Config, modelos, SQLite (sqflite) y clientes HTTP (dio)
+│   ├── lib/data/         Repositorio local-first: caché, cola, sync, recomendaciones
+│   ├── lib/providers/    Estado (provider)
+│   ├── lib/screens/      Pantallas (auth, buscar, biblioteca, favoritos, para ti, perfil, admin)
+│   ├── test/             Pruebas unitarias y de widget
+│   └── integration_test/ Recorrido con capturas (simulador iOS)
+├── backend/              API REST FastAPI + PostgreSQL (Docker Compose), extendida de la Práctica 2
+├── android/TareasApp/    Cliente Kotlin/Compose de la Práctica 2 (sólo regresión)
+├── docs/                 Informe, matriz de pruebas, evidencias y guía de Google OAuth
+├── .github/workflows/    Workflow de iOS en simulador (macOS) con capturas
+├── tools/                Utilidades de CI
+└── imagenes/             Capturas de la Práctica 2
+```
+
+---
+
+## Resumen
+
+Aplicación **Flutter** (un solo código de cliente) que consulta la API pública
+**Open Library**, guarda en SQLite lo consultado para usarlo sin conexión, mantiene
+historial de búsquedas, favoritos y biblioteca personal por usuario, genera
+**recomendaciones** con una regla reproducible y sincroniza con el backend
+mediante una **cola de operaciones idempotente**. Incluye registro/inicio de sesión
+con correo, opción de Google y un **rol administrador** validado en el servidor.
+
+| Documento | Contenido |
+|---|---|
+| [`docs/informe.md`](docs/informe.md) | Informe técnico: arquitectura, endpoints, modelo de datos, sincronización, recomendaciones |
+| [`docs/pruebas.md`](docs/pruebas.md) | Plan, matriz de pruebas con resultados reales, hallazgos y dictamen |
+| [`docs/google-oauth-setup.md`](docs/google-oauth-setup.md) | Configuración de Google OAuth sin secretos |
+| [`docs/exposicion.md`](docs/exposicion.md) | Guion de la exposición de 10 minutos |
+| [`docs/practica2-README.md`](docs/practica2-README.md) | README original de la Práctica 2 |
+
+### Relación con la Práctica 2
+
+El historial de la Práctica 2 se conserva; su estado final está en la etiqueta
+`practica2-base` (commit `1f4e511`).
+
+| Reutilizado de la Práctica 2 | Añadido en la Práctica 5 |
+|---|---|
+| `POST /auth/register`, `POST /auth/login`, JWT y Argon2 | `POST /auth/google`, `GET /auth/me`, `POST /auth/logout`, rol en el JWT |
+| `GET/POST/PUT/DELETE /tareas` (se mantiene como regresión) | `/library`, `/favorites`, `/history`, `POST /sync`, `/admin/*` |
+| Docker Compose con PostgreSQL | Volumen nombrado, `bootstrap_admin`, perfil opcional `cloudflared` (HTTPS) |
+| Cliente Kotlin/Compose (sin iOS) | Cliente Flutter para Android e iOS (la app de la Práctica 2 queda sólo como regresión) |
 
 ---
 
 ## Desarrollo
 
-### Conceptos
+### Requisitos
 
-- **Docker**: una herramienta que permite empaquetar una aplicacion junto con
-  todo lo que necesita para correr (interprete, librerias, variables de
-  configuracion) dentro de una unidad aislada llamada *contenedor*.
-  **reproducibilidad**: si el proyecto corre en un contenedor en mi maquina,
-  corre igual en la maquina de un companero o en un servidor en la nube, porque
-  las dependencias exactas viajan con el codigo.
-- **Imagen y contenedor**: la *imagen* es una plantilla de solo lectura (como una
-  "foto congelada" del sistema de archivos de la app) construida a partir de un
-  `Dockerfile`. El *contenedor* es una instancia en ejecucion de esa imagen: se
-  le puede iniciar, detener o borrar, y por defecto es efimero.
-- **Dockerfile**: un archivo de texto con instrucciones que Docker ejecuta en
-  orden para construir la imagen: `FROM` define la imagen base, `WORKDIR` fija el
-  directorio de trabajo dentro del contenedor, `COPY` copia archivos del host a
-  la imagen, `RUN` ejecuta comandos durante la construccion (por ejemplo,
-  instalar dependencias).
-- **docker-compose.yml**: un archivo YAML que describe la aplicacion completa
-  como un conjunto de *servicios* relacionados (en este caso, `backend` y
-  `postgres`), especificando para cada uno la imagen.
-- **Backend o servicio REST**: el programa que corre del lado del servidor,
-  expone rutas HTTP (por ejemplo `/auth/login`, `/tareas`) y responde a los
-  verbos `GET`, `POST`, `PUT` y `DELETE` segun la accion solicitada. 
-  resultado (exito, error del cliente, error de autenticacion, etc.).
-- **ORM y base de datos**: un ORM (Object-Relational Mapper), como SQLAlchemy
-  (usado internamente por SQLModel), permite trabajar con las tablas de la base
-  de datos como si fueran clases y objetos del lenguaje de programacion, sin
-  escribir sentencias SQL a mano. 
-
-### Arquitectura
-
-```
-Practica2/
-├── backend/                     # API REST en FastAPI
-│   ├── app/
-│   │   ├── main.py              # Punto de entrada FastAPI
-│   │   ├── database.py          # Engine SQLModel / conexion a Postgres
-│   │   ├── models.py            # Modelos User y Tarea
-│   │   ├── schemas.py           # Esquemas Pydantic (request/response)
-│   │   ├── security.py          # Hash Argon2, JWT, dependencia get_current_user
-│   │   └── routers/
-│   │       ├── auth.py          # POST /auth/register, POST /auth/login
-│   │       └── tareas.py        # CRUD /tareas (protegido por JWT)
-│   ├── requirements.txt
-│   ├── Dockerfile
-│   ├── docker-compose.yml       # Servicios: postgres + backend
-│   ├── .env.example
-│   └── .gitignore
-├── android/TareasApp/            # App Android (Kotlin + Jetpack Compose)
-│   └── app/src/main/java/com/practica2/tareasapp/
-│       ├── data/remote/          # Retrofit, ApiService, DTOs, interceptor JWT
-│       ├── data/local/           # SessionDataStore (persistencia del token)
-│       ├── data/repository/      # AuthRepository, TareasRepository
-│       ├── viewmodel/            # LoginViewModel, RegisterViewModel, TareasViewModel, SessionViewModel
-│       ├── ui/navigation/        # NavGraph + rutas
-│       ├── ui/components/        # Menu de navegacion (AppScaffold)
-│       └── ui/screens/           # LoginScreen, RegisterScreen, TareasListScreen, TareaFormScreen
-├── imagenes/                     # Capturas de pantalla del flujo probado
-└── README.md                     # Este archivo
-```
-
-### Documentacion de endpoints
-
-Base URL local (backend dockerizado): `http://localhost:8000` (o
-`http://<IP_LOCAL>:8000` desde un dispositivo fisico en la misma red).
-
-#### `GET /` — Health check
-
-| | |
+| Herramienta | Versión usada |
 |---|---|
-| Autenticacion | No requerida |
-| Respuesta 200 | `{"status": "ok", "service": "practica2-tareas-api"}` |
+| Flutter | 3.47.6 (Dart 3.13) |
+| JDK (Android) | 21 |
+| Android | 7.0 (API 24) o superior; probado en Android 16 |
+| iOS | 15 o superior; compilar requiere macOS + Xcode (o el workflow de CI) |
+| Docker / Compose | 29.x |
+| Python (pruebas del backend) | 3.12 |
 
-#### `POST /auth/register` — Registrar usuario
-
-| | |
-|---|---|
-| Autenticacion | No requerida |
-| Body (JSON) | `{"username": "jesus", "password": "SuperSecreta123"}` |
-| Respuesta 201 | `{"id": 1, "username": "jesus", "created_at": "2026-09-10T21:49:54.426618"}` |
-| Respuesta 400 | `{"detail": "El usuario ya existe"}` |
-
-#### `POST /auth/login` — Iniciar sesion
-
-| | |
-|---|---|
-| Autenticacion | No requerida |
-| Body (JSON) | `{"username": "jesus", "password": "SuperSecreta123"}` |
-| Respuesta 200 | `{"access_token": "eyJhbGciOi...", "token_type": "bearer", "expires_in": 3600}` |
-| Respuesta 401 | `{"detail": "Usuario o contrasena incorrectos"}` |
-
-#### `GET /tareas` — Listar tareas del usuario autenticado
-
-| | |
-|---|---|
-| Autenticacion | `Authorization: Bearer <token>` |
-| Respuesta 200 | `[{"id": 1, "titulo": "Terminar practica 2", "descripcion": "Backend+Android", "completada": false, "owner_id": 1, "created_at": "...", "updated_at": "..."}]` |
-| Respuesta 401 | `{"detail": "No hay una sesion valida (token ausente, invalido o expirado)"}` |
-
-#### `GET /tareas/{id}` — Obtener una tarea
-
-| | |
-|---|---|
-| Autenticacion | `Authorization: Bearer <token>` |
-| Parametros | `id` (int, path) |
-| Respuesta 200 | `{"id": 1, "titulo": "...", ...}` |
-| Respuesta 404 | `{"detail": "Tarea no encontrada"}` (no existe o pertenece a otro usuario) |
-
-#### `POST /tareas` — Crear tarea
-
-| | |
-|---|---|
-| Autenticacion | `Authorization: Bearer <token>` |
-| Body (JSON) | `{"titulo": "Terminar practica 2", "descripcion": "Backend+Android", "completada": false}` |
-| Respuesta 201 | `{"id": 1, "titulo": "Terminar practica 2", "descripcion": "Backend+Android", "completada": false, "owner_id": 1, "created_at": "...", "updated_at": "..."}` |
-| Respuesta 401 | Sin token valido |
-
-#### `PUT /tareas/{id}` — Actualizar tarea
-
-| | |
-|---|---|
-| Autenticacion | `Authorization: Bearer <token>` |
-| Parametros | `id` (int, path) |
-| Body (JSON) | `{"completada": true}` (campos parciales; solo se actualiza lo enviado) |
-| Respuesta 200 | Tarea actualizada completa |
-| Respuesta 400 | `{"detail": "No se recibio ningun campo para actualizar"}` |
-| Respuesta 404 | `{"detail": "Tarea no encontrada"}` |
-
-#### `DELETE /tareas/{id}` — Borrar tarea
-
-| | |
-|---|---|
-| Autenticacion | `Authorization: Bearer <token>` |
-| Parametros | `id` (int, path) |
-| Respuesta 200 | `{"detail": "Tarea eliminada correctamente", "id": 1}` |
-| Respuesta 404 | `{"detail": "Tarea no encontrada"}` |
-
-Todos los endpoints validados manualmente con `curl` durante el desarrollo,
-cubriendo los 5 codigos de estado exigidos por el enunciado: **200, 201, 400,
-401, 404**.
-
-### Instalacion y ejecucion — Backend
-
-Requisito: tener Docker y Docker Compose instalados (nada mas).
+### 1. Arrancar el backend
 
 ```bash
-git clone <URL_DEL_REPOSITORIO>
-cd <repo>/backend
-cp .env.example .env
-# Editar .env: cambiar POSTGRES_PASSWORD y, sobre todo, JWT_SECRET por un
-# valor aleatorio y largo, por ejemplo:
-#   python3 -c "import secrets; print(secrets.token_hex(32))"
-docker compose up --build
+cd backend
+cp .env.example .env      # genera secretos aleatorios y cámbialos; .env no se versiona
+#   JWT_SECRET: python3 -c "import secrets; print(secrets.token_hex(32))"
+docker compose up -d --build
+docker compose exec backend python -m app.bootstrap_admin   # crea el administrador
+curl http://localhost:8000/health
 ```
 
-Esto construye la imagen del backend (`Dockerfile`), descarga la imagen oficial
-de `postgres:17`, y levanta ambos servicios conectados por una red interna de
-Docker. El backend queda expuesto en `http://localhost:8000` (documentacion
-interactiva automatica en `http://localhost:8000/docs`). Postgres persiste sus
-datos en `backend/data/` (bind mount), por lo que la informacion sobrevive a
-`docker compose down` (no a `docker compose down -v`, que borra tambien el
-volumen).
+Pruebas del backend: `python -m venv .venv && .venv/bin/pip install -r requirements.txt -r requirements-test.txt && .venv/bin/python -m pytest`.
 
-Verificacion rapida:
+### 2. Ejecutar en Android (celular físico, sin emulador)
 
 ```bash
-curl http://localhost:8000/
+cd app
+flutter pub get
+adb reverse tcp:8000 tcp:8000          # el celular llega al backend de la laptop por USB
+flutter run -d <id-del-dispositivo> --dart-define=API_BASE_URL=http://127.0.0.1:8000
 ```
 
-### Instalacion y ejecucion — App Android
+Alternativas: usar la IP real de la laptop (`hostname -I`), nunca `10.0.2.2`; o
+exponer el backend por HTTPS con `docker compose --profile tunnel up -d`. El
+tráfico HTTP sólo está permitido en **debug** (`android/app/src/debug`); en
+release la app exige HTTPS (`AppConfig.validate`).
 
-1. Abrir la carpeta `android/TareasApp/` en Android Studio.
-2. Editar `app/src/main/java/com/practica2/tareasapp/data/remote/ApiConfig.kt`
-   y cambiar `BASE_URL` por la IP local del equipo donde corre el backend
-   (obtenerla con `ip addr` en Linux/Mac o `ipconfig` en Windows), por ejemplo
-   `"http://192.168.1.100:8000/"`. **Importante:** el dispositivo fisico debe
-   estar en la misma red Wi-Fi que ese equipo, y el firewall debe permitir
-   conexiones entrantes al puerto 8000.
-   - Nota: si en cambio se prueba en el emulador de Android Studio, la
-     direccion correcta es `http://10.0.2.2:8000/`, ya que `localhost` desde el
-     emulador apunta al propio emulador y no al equipo anfitrion.
-3. Conectar el dispositivo fisico por USB (con depuracion USB activada) o por
-   ADB inalambrico, y ejecutar la app desde Android Studio.
-4. El flujo esperado: pantalla de Login → boton "Registrate" si no se tiene
-   cuenta → tras iniciar sesion, pantalla de Tareas con boton `+` para crear,
-   casilla para marcar como completada
-### Seguridad — QA documentado
+### 3. Ejecutar en iOS
 
-- **Contrasenas**: nunca se almacenan ni se registran (logs) en texto plano;
-  se hashean con Argon2 (`backend/app/security.py`) antes de guardarse en la
-  base de datos.
-- **Sesiones**: cada login exitoso emite un JWT firmado con `JWT_SECRET`
-  (HS256) y expiracion configurable (`JWT_EXPIRE_MINUTES`, por defecto 60
-  minutos). El backend valida firma y expiracion en cada request a un endpoint
-  protegido (`get_current_user`), y responde `401` si el token falta
-- **Aislamiento de datos**: cada tarea pertenece a un `owner_id`; un usuario
-  nunca puede leer, editar o borrar tareas de otro usuario (se responde `404`
-  en vez de `403` para no filtrar si el recurso existe).
-- **Secretos fuera del repositorio**: `backend/.env` esta en `.gitignore`; solo
-  se publica `backend/.env.example` con los nombres de las variables, sin
-  valores reales.
+En una Mac con Xcode: `cd app && flutter pub get && flutter run -d <simulador> --dart-define=API_BASE_URL=http://127.0.0.1:8000`
+(ATS permite `localhost` mediante `NSAllowsLocalNetworking`). Sin Mac, el workflow
+[`ios.yml`](.github/workflows/ios.yml) levanta el backend con SQLite en un runner
+`macos-15`, ejecuta `flutter analyze`, `flutter test` y el recorrido
+`integration_test/evidencia_test.dart` en un simulador iPhone y publica las capturas
+como artefacto.
 
-### Capturas de pantalla
+### 4. Google Sign-In y secretos
 
-Flujo completo probado en un dispositivo Android físico, conectado al backend
-dockerizado por red local.
+Sigue [`docs/google-oauth-setup.md`](docs/google-oauth-setup.md). Los client IDs van
+en `backend/.env` y en `dart_defines.local.json` (ver `dart_defines.example.json`),
+y para iOS en `app/ios/Flutter/Secrets.xcconfig`; **ninguno se versiona**. Sin
+client IDs la app muestra que Google no está configurado y no simula el ingreso.
 
-**Menú de navegación**
+### 5. Pruebas
 
-![Menu de navegacion](imagenes/08-menu-navegacion.png)
+```bash
+cd app && flutter analyze && flutter test       # 15 pruebas
+cd backend && .venv/bin/python -m pytest        # 18 pruebas
+```
 
-**Registro de usuario**
+### Estrategia de sincronización (resumen)
 
-![Registro de usuario](imagenes/01-registro.png)
+Toda escritura va primero a SQLite y a una cola con `op_id` (UUID). Se envía con
+`POST /sync` al abrir la app, al recuperar la conexión, tras cada cambio y con
+reintentos con retroceso exponencial; el servidor guarda el resultado por `op_id`,
+así que reenviar un lote no duplica datos. Después se descarga el estado del
+servidor: una fila local con cambios pendientes nunca se sobrescribe. Detalle en
+[`docs/informe.md`](docs/informe.md).
 
-**Inicio de sesión**
+---
 
-![Inicio de sesion](imagenes/02-login.png)
+## Evidencias
 
-**Inicio de sesión con credenciales incorrectas**
+Todas las capturas son de un **Xiaomi 25062PC34G, Android 16**, tomadas con
+`adb exec-out screencap` durante la ejecución de [`docs/pruebas.md`](docs/pruebas.md).
 
-![Credenciales incorrectas](imagenes/03-login-error.png)
+**Registro de una cuenta nueva (P-01)**
 
-**Crear tarea**
+![Formulario de registro](docs/img/android/02-p01-registro-formulario.png)
 
-![Crear tarea](imagenes/04-crud-crear.png)
+**Búsqueda pública en Open Library: 48 281 resultados en 0.8 s (P-02)**
 
-**Listar tareas**
+![Resultados de búsqueda](docs/img/android/04-p02-resultados-dune.png)
 
-![Listar tareas](imagenes/05-crud-listar.png)
+**Detalle de un libro con descripción real (P-02)**
 
-**Actualizar tarea**
+![Detalle del libro](docs/img/android/05-p02-detalle-dune.png)
 
-![Actualizar tarea](imagenes/06-crud-actualizar.png)
+**Favorito, estado «Leyendo» y calificación de 4 estrellas (P-01)**
 
-**Borrar tarea**
+![Favorito y biblioteca](docs/img/android/06-p01-favorito-biblioteca-calificacion.png)
 
-![Borrar tarea](imagenes/07-crud-borrar.png)
+**Favoritos conservados tras cerrar y abrir la app (P-05)**
+
+![Favoritos tras reinicio](docs/img/android/07-p05-favoritos-tras-reinicio.png)
+
+**Recomendaciones con criterio y motivo por libro (P-06)**
+
+![Recomendaciones](docs/img/android/09-p06-recomendaciones-despues.png)
+
+**Consulta sin conexión: resultados guardados con su fecha (P-07)**
+
+![Búsqueda sin conexión](docs/img/android/31-p07-busqueda-sin-conexion-con-fecha.png)
+
+**Cambios hechos sin conexión quedan pendientes (P-08)**
+
+![Cambios pendientes](docs/img/android/11-p08-cambios-pendientes-sin-conexion.png)
+
+**Al reconectar se sincroniza solo y sin duplicados (P-08)**
+
+![Sincronizado](docs/img/android/12-p08-sincronizado-tras-reconexion.png)
+
+**Servidor caído: error visible y cambio pendiente (P-03)**
+
+![Servidor caído](docs/img/android/29-p03-servidor-caido-pendientes.png)
+
+**Una cuenta nueva no ve los datos de otra (P-10)**
+
+![Aislamiento entre cuentas](docs/img/android/16-p10-cuenta-b-favoritos-vacios.png)
+
+**Rol administrador: usuarios con sus contadores (P-14)**
+
+![Panel de administración](docs/img/android/21-p14-admin-despues-correccion.png)
+
+**Google Sign-In bloqueado por falta de client IDs, sin simular el ingreso (P-04)**
+
+![Google no configurado](docs/img/android/25-p04-google-no-configurado.png)
+
+**Texto ampliado (escala 1.45) en Perfil (P-11)**
+
+![Texto ampliado](docs/img/android/22-p11-texto-ampliado-perfil.png)
+
+Evidencia adicional en texto: [`docs/evidencias/`](docs/evidencias/) (idempotencia de
+`/sync`, 403 de administración, baja lógica en el servidor, etiquetas de accesibilidad).
+
+**iOS:** las capturas del simulador se generan con el workflow de CI; su estado real
+(ejecutado o bloqueado) está en la sección 8 de [`docs/pruebas.md`](docs/pruebas.md).
 
 ---
 
 ## Conclusiones
 
-- **Retos**: construir el backend completo desde cero (autenticacion,
-  autorizacion por token y CRUD protegido) y coordinar el manejo de sesion del
-  lado de la app Android (persistencia del token, interceptor automatico de
-  autorizacion, deteccion de sesion expirada) fueron las partes que requirieron
-  mas piezas trabajando en conjunto.
-- **Logros**: las cuatro operaciones CRUD, el registro y el inicio de sesion
-  quedaron funcionando de extremo a extremo — probados primero con `curl`
-  cubriendo los codigos 200/201/400/401/404, y despues con la app real
-  corriendo en un dispositivo Android fisico conectado al backend dockerizado.
-- **Dificultades y solucion**: para probar la app en un dispositivo fisico fue
-  necesario identificar la IP local correcta del equipo donde corre el backend
-  (en vez de usar `localhost`, que no aplica desde otro dispositivo) y
-  confirmar que ambos estuvieran en la misma red antes de que la conexion
-  funcionara.
+Antes de empezar pensaba que «funcionar sin conexión» era guardar una copia de lo
+que se descarga. Al construirlo entendí que lo difícil es lo contrario: decidir qué
+pasa con los **cambios** hechos sin red. Tuve que pensar en identificadores
+generados en el cliente, en una cola que se pueda reenviar sin duplicar y en no
+pisar con la descarga lo que aún no se había enviado. Ver el contador de pendientes
+bajar a cero al quitar el modo avión, y comprobar en la base de datos que no había
+duplicados, fue lo que más me convenció de que el diseño funcionaba.
+
+Me sorprendió cuánto aportó probar en el celular con una guía de casos: salieron
+defectos que ni el análisis estático ni mis pruebas automáticas habían mostrado
+(autores «desconocidos» en las recomendaciones, fechas con seis horas de
+diferencia, un historial lleno de fragmentos de lo que iba tecleando). También
+quedaron cosas sin cubrir: no pude probar Google Sign-In porque faltan los client
+IDs y no ejecuté TalkBack real. Prefiero declararlo a fingirlo.
+
+Usé Claude Code como asistente de programación, y lo declaro porque la práctica lo
+pide; las decisiones de diseño y las pruebas en mi dispositivo las hice yo.
 
 ---
 
-## Bibliografia
+## Referencias (APA)
 
-FastAPI. (2026). *FastAPI documentation*. https://fastapi.tiangolo.com/
+Flutter. (s. f.). *Flutter documentation*. https://docs.flutter.dev/
 
-SQLModel. (2026). *SQLModel documentation*. https://sqlmodel.tiangolo.com/
+FastAPI. (s. f.). *FastAPI*. https://fastapi.tiangolo.com/
 
-The PostgreSQL Global Development Group. (2026). *PostgreSQL 17 documentation*.
-https://www.postgresql.org/docs/17/
+Google. (s. f.). *google_sign_in*. https://pub.dev/packages/google_sign_in
 
-Docker Inc. (2026). *Docker documentation*. https://docs.docker.com/
+Internet Archive. (s. f.). *Open Library API*. https://openlibrary.org/developers/api
 
-Docker Inc. (2026). *Compose file reference*.
-https://docs.docker.com/compose/compose-file/
+SQLite Consortium. (s. f.). *SQLite documentation*. https://www.sqlite.org/docs.html
 
-PyJWT. (2026). *PyJWT documentation*. https://pyjwt.readthedocs.io/
+---
 
+<a id="english"></a>
+
+# Practice 5 — ESCOM Library: public API queries and platform features on Android and iOS
+
+## Cover
+
+- **Name:** Jesús Ángel González Arellano
+- **Group:** 7CV4
+- **Course:** Native mobile application development
+- **Professor:** Gabriel Hurtado Avilés
+- **Due date:** Friday, November 6, 2026
+
+## Summary
+
+A single **Flutter** client for Android and iOS that queries the public **Open
+Library** API, stores what it fetches in SQLite for offline use, keeps per-user
+search history, favorites and a personal library, builds reproducible
+**recommendations**, and syncs with the backend through an **idempotent operation
+queue**. It includes e-mail sign-up/sign-in, a Google option and a server-validated
+**administrator role**. The backend is the Practice 2 FastAPI service, extended; its
+history is kept and the final Practice 2 state is tagged `practica2-base`
+(commit `1f4e511`). Reused endpoints: `/auth/register`, `/auth/login`, `/tareas`.
+New endpoints: `/auth/google`, `/auth/me`, `/auth/logout`, `/library`, `/favorites`,
+`/history`, `/sync`, `/admin/*`.
+
+## Requirements
+
+Flutter 3.47.6, JDK 21, Android 7.0 (API 24)+ (tested on Android 16), iOS 15+
+(building requires macOS + Xcode, or the CI workflow), Docker Compose, Python 3.12
+for backend tests.
+
+## Run it
+
+**Backend**
+
+```bash
+cd backend
+cp .env.example .env     # set random secrets; .env is never committed
+docker compose up -d --build
+docker compose exec backend python -m app.bootstrap_admin
+```
+
+**Android (physical device)**
+
+```bash
+cd app && flutter pub get
+adb reverse tcp:8000 tcp:8000
+flutter run -d <device-id> --dart-define=API_BASE_URL=http://127.0.0.1:8000
+```
+
+Plain HTTP is allowed only in the debug build; release builds require HTTPS.
+
+**iOS** — on a Mac: `flutter run -d <simulator> --dart-define=API_BASE_URL=http://127.0.0.1:8000`.
+Without a Mac, `.github/workflows/ios.yml` starts the backend (SQLite) on a
+`macos-15` runner, runs analysis, tests and the integration walkthrough on an iPhone
+simulator and uploads the screenshots as an artifact.
+
+**Google Sign-In** — see [`docs/google-oauth-setup.md`](docs/google-oauth-setup.md).
+Client IDs live in untracked files; without them the app says Google is not
+configured and never fakes a sign-in.
+
+**Tests** — `flutter analyze && flutter test` (15) and `python -m pytest` (18).
+
+## Evidence and test matrix
+
+Screenshots (Xiaomi 25062PC34G, Android 16) are listed in the Spanish section above
+and in [`docs/img/android/`](docs/img/android/). The full test matrix with real
+results, defects found and fixed, and the verdict is in
+[`docs/pruebas.md`](docs/pruebas.md) (Spanish). iOS status is in its section 8.
+
+## Limitations (declared honestly)
+
+Google Sign-In could not be tested (Google Cloud client IDs missing); TalkBack and a
+release APK were not run on the device; iOS evidence depends on the CI workflow.
+
+## Tools used
+
+Claude Code (Anthropic) was used as a programming assistant for code, tests and
+documentation; design decisions, device testing and publishing were done by the
+author.
