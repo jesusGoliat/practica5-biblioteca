@@ -67,7 +67,7 @@ void main() {
     await tester.tap(find.text('Leyendo'));
     await tester.pump(const Duration(seconds: 1));
     await shot('06-favorito-y-biblioteca');
-    await tester.pageBack();
+    await tester.tap(find.byType(BackButton));
     await tester.pump(const Duration(seconds: 1));
 
     await tester.tap(find.text('Biblioteca'));
@@ -80,8 +80,10 @@ void main() {
     // Recomendaciones.
     await tester.tap(find.text('Para ti'));
     await tester.pump(const Duration(seconds: 1));
-    await tester.tap(find.byKey(const Key('generate-recommendations')));
-    await pumpUntil(tester, find.text('Criterio'));
+    // Se generan solas al entrar; si aún no hay datos se pide el botón de generar.
+    final generate = find.byKey(const Key('generate-recommendations'));
+    if (generate.evaluate().isNotEmpty) await tester.tap(generate);
+    await pumpUntil(tester, find.text('Criterio'), seconds: 90);
     await tester.pump(const Duration(seconds: 2));
     await shot('09-recomendaciones');
 
@@ -96,6 +98,7 @@ void main() {
     await tester.tap(find.text('Perfil'));
     await tester.pump(const Duration(seconds: 1));
     await shot('11-perfil-sincronizacion');
+    await tester.ensureVisible(find.byKey(const Key('logout')));
     await tester.tap(find.byKey(const Key('logout')));
     await pumpUntil(tester, find.byKey(const Key('login-email')));
     await shot('12-sesion-cerrada');
@@ -108,6 +111,7 @@ void main() {
       await pumpUntil(tester, find.byKey(const Key('search-field')));
       await tester.tap(find.text('Perfil'));
       await pumpUntil(tester, find.byKey(const Key('admin-entry')));
+      await tester.ensureVisible(find.byKey(const Key('admin-entry')));
       await tester.tap(find.byKey(const Key('admin-entry')));
       await pumpUntil(tester, find.textContaining('Favoritos:'));
       await shot('13-admin-usuarios');
