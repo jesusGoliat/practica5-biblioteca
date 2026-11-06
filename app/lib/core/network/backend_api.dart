@@ -24,13 +24,11 @@ class BackendApi {
         );
 
   final Dio _dio;
-  String? _token;
   void Function()? onUnauthorized;
 
   String get baseUrl => _dio.options.baseUrl;
 
   void setToken(String? token) {
-    _token = token;
     if (token == null || token.isEmpty) {
       _dio.options.headers.remove('Authorization');
     } else {

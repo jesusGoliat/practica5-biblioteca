@@ -83,6 +83,11 @@ class ApiException implements Exception {
           detail.isNotEmpty ? detail : 'La solicitud no es válida.',
           statusCode: status,
         );
+      case DioExceptionType.transformTimeout:
+        return const ApiException(
+          ApiErrorKind.malformed,
+          'No se pudo procesar la respuesta del servidor.',
+        );
       case DioExceptionType.cancel:
         return const ApiException(ApiErrorKind.unknown, 'Solicitud cancelada.');
       case DioExceptionType.badCertificate:
