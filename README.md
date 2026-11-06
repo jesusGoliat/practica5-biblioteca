@@ -50,6 +50,7 @@ con correo, opción de Google y un **rol administrador** validado en el servidor
 |---|---|
 | [`docs/informe.md`](docs/informe.md) | Informe técnico: arquitectura, endpoints, modelo de datos, sincronización, recomendaciones |
 | [`docs/pruebas.md`](docs/pruebas.md) | Plan, matriz de pruebas con resultados reales, hallazgos y dictamen |
+| [Issues de defectos](https://github.com/jesusGoliat/practica5-biblioteca/issues?q=is%3Aissue) | 10 defectos encontrados al probar: 8 corregidos (cerrados con su commit) y 2 abiertos (D-09, D-10) |
 | [`docs/google-oauth-setup.md`](docs/google-oauth-setup.md) | Configuración de Google OAuth sin secretos |
 | [`docs/exposicion.md`](docs/exposicion.md) | Guion de la exposición de 10 minutos |
 | [`docs/practica2-README.md`](docs/practica2-README.md) | README original de la Práctica 2 |
