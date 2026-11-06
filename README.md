@@ -29,7 +29,8 @@ practica5-biblioteca/
 ├── backend/              API REST FastAPI + PostgreSQL (Docker Compose), extendida de la Práctica 2
 ├── android/TareasApp/    Cliente Kotlin/Compose de la Práctica 2 (sólo regresión)
 ├── docs/                 Informe, matriz de pruebas, evidencias y guía de Google OAuth
-├── .github/workflows/    Workflow de iOS en simulador (macOS) con capturas
+├── codemagic.yaml        CI de iOS en simulador (Codemagic, Mac M2) con capturas
+├── .github/workflows/    Respaldo manual del CI de iOS (GitHub Actions)
 ├── tools/                Utilidades de CI
 └── imagenes/             Capturas de la Práctica 2
 ```
@@ -110,11 +111,12 @@ release la app exige HTTPS (`AppConfig.validate`).
 ### 3. Ejecutar en iOS
 
 En una Mac con Xcode: `cd app && flutter pub get && flutter run -d <simulador> --dart-define=API_BASE_URL=http://127.0.0.1:8000`
-(ATS permite `localhost` mediante `NSAllowsLocalNetworking`). Sin Mac, el workflow
-[`ios.yml`](.github/workflows/ios.yml) levanta el backend con SQLite en un runner
-`macos-15`, ejecuta `flutter analyze`, `flutter test` y el recorrido
+(ATS permite `localhost` mediante `NSAllowsLocalNetworking`). Sin Mac, la vía principal es **Codemagic**
+([`codemagic.yaml`](codemagic.yaml), runner Mac M2, plan gratuito): levanta el backend
+con SQLite en el runner, ejecuta `flutter analyze`, `flutter test` y el recorrido
 `integration_test/evidencia_test.dart` en un simulador iPhone y publica las capturas
-como artefacto.
+como artefacto. Como respaldo manual existe el workflow de GitHub Actions
+[`ios.yml`](.github/workflows/ios.yml) (`macos-15`).
 
 ### 4. Google Sign-In y secretos
 
@@ -303,9 +305,11 @@ flutter run -d <device-id> --dart-define=API_BASE_URL=http://127.0.0.1:8000
 Plain HTTP is allowed only in the debug build; release builds require HTTPS.
 
 **iOS** — on a Mac: `flutter run -d <simulator> --dart-define=API_BASE_URL=http://127.0.0.1:8000`.
-Without a Mac, `.github/workflows/ios.yml` starts the backend (SQLite) on a
-`macos-15` runner, runs analysis, tests and the integration walkthrough on an iPhone
-simulator and uploads the screenshots as an artifact.
+Without a Mac, the main path is **Codemagic** (`codemagic.yaml`, M2 Mac runner, free
+tier): it starts the backend (SQLite) on the runner, runs analysis, tests and the
+integration walkthrough on an iPhone simulator and uploads the screenshots as an
+artifact. A manual GitHub Actions workflow (`.github/workflows/ios.yml`) is kept as a
+fallback.
 
 **Google Sign-In** — see [`docs/google-oauth-setup.md`](docs/google-oauth-setup.md).
 Client IDs live in untracked files; without them the app says Google is not

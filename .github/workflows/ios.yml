@@ -2,9 +2,6 @@ name: iOS (simulador + evidencias)
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: ['app/**', 'backend/**', '.github/workflows/ios.yml', 'tools/**']
 
 jobs:
   ios:

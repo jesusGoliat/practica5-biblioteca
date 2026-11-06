@@ -35,7 +35,7 @@
 | Fecha | 2026-11-05, 21:48 a 22:35 (hora del dispositivo) |
 | Equipo de desarrollo | Linux, Flutter 3.47.6, JDK 21, Docker 29.8 / Compose |
 | Android | Xiaomi 25062PC34G, Android 16 (API 36), conectado por USB, **sin emulador**; APK debug de la rama |
-| iOS | Simulador iPhone en GitHub Actions `macos-15` (ver sección 5; resultados al final de este documento) |
+| iOS | Simulador iPhone en Codemagic (`mac_mini_m2`; respaldo: GitHub Actions `macos-15`). Resultados en la sección 8 |
 | Backend | Docker Compose local (PostgreSQL 17, FastAPI), accesible desde el celular con `adb reverse tcp:8000 tcp:8000` |
 | Datos | Cuentas ficticias `alumno1@`, `alumno2@` y `admin@biblioteca.test`; ninguna credencial real |
 
@@ -69,7 +69,7 @@ Estados: **aprobado**, **fallido**, **bloqueado** (no cuenta como ejecutado) o
 | `backend/tests` (pytest) | Auth, biblioteca, favoritos, historial, `/sync` idempotente, admin 403, regresión de tareas, contadores de admin | 18 pasan |
 | `app/test` (flutter test) | Repositorio local-first (cola, caché, aislamiento por usuario, historial), fechas UTC, autores, candado HTTPS y validación del login | 15 pasan |
 | `flutter analyze` | Análisis estático | Sin problemas |
-| `integration_test/evidencia_test.dart` en simulador iOS | Recorrido con capturas (GitHub Actions) | Ver sección 8 |
+| `integration_test/evidencia_test.dart` en simulador iOS | Recorrido con capturas (Codemagic; respaldo: GitHub Actions) | Ver sección 8 |
 
 El mismo recorrido de integración se intentó en el Xiaomi con `flutter drive`, pero
 quedó detenido en la primera captura (`convertFlutterSurfaceToImage`), por lo que
@@ -106,8 +106,9 @@ release no ejecutados; (4) D-09 en horizontal.
 
 ## 8. Resultados en iOS
 
-_Se llenan con la ejecución del workflow `.github/workflows/ios.yml`; si no se
-logra ejecutar, se declara aquí como bloqueado y no se reporta como probado._
+_Se llenan con la ejecución de `codemagic.yaml` (o, como respaldo, de
+`.github/workflows/ios.yml`); si no se logra ejecutar, se declara aquí como
+bloqueado y no se reporta como probado._
 
 ## 9. Contribuciones y herramientas
 
