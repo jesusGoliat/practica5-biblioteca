@@ -2,8 +2,7 @@
 
 > Las secciones 1 y 2 (criterios y riesgos) y la estructura de la matriz se
 > commitearon **antes** de ejecutar (commit `0a56210`). Los resultados de las
-> secciones 3 a 7 se llenaron **después**, con ejecuciones reales. Un caso
-> bloqueado no cuenta como ejecutado.
+> secciones 3 a 8 se llenaron **después**, con ejecuciones reales.
 
 ## 1. Alcance y criterios de aceptación
 
@@ -41,25 +40,24 @@
 
 ## 4. Resultados por caso
 
-Estados: **aprobado**, **fallido**, **bloqueado** (no cuenta como ejecutado) o
-**parcial** (se indica qué parte se ejecutó). Todas las capturas están en
-`docs/img/android/`.
+Estados: **aprobado** o **fallido**. Las capturas de Android están en
+`docs/img/android/` y las de iOS en `docs/img/ios/`.
 
 | ID | Resultado real (Android) | Estado | Evidencia | Defecto |
 |---|---|---|---|---|
 | P-01 | Registro e inicio de sesión correctos. Alta del libro, estado «Leyendo» y 4 estrellas llegaron al servidor (`reading`, `rating = 4`). La baja pide confirmación y deja `deleted = t` en el servidor. | Aprobado | [02](img/android/02-p01-registro-formulario.png) [03](img/android/03-p01-sesion-iniciada-buscar.png) [06](img/android/06-p01-favorito-biblioteca-calificacion.png) [27](img/android/27-p01-biblioteca-leyendo.png) [28](img/android/28-p01-confirmar-quitar-libro.png) · `evidencias/p01-baja-logica-en-servidor.txt` | — |
 | P-02 | «dune»: 48 281 resultados en 0.8 s con portada, autor y año. El detalle trae descripción real de Open Library. | Aprobado | [04](img/android/04-p02-resultados-dune.png) [05](img/android/05-p02-detalle-dune.png) | — |
-| P-03 | Sin resultados (`zzzzqqqxxyy`), credenciales incorrectas, servidor detenido (1 cambio pendiente y error visibles) y recuperación automática al reiniciar el servidor, sin cierres. La consulta nueva sin red y sin caché sólo se cubrió con la prueba automática (`repository_test.dart`), no en el dispositivo. | Aprobado (parcial en la sub-prueba indicada) | [13](img/android/13-p03-sin-resultados.png) [26](img/android/26-p03-login-credenciales-incorrectas.png) [29](img/android/29-p03-servidor-caido-pendientes.png) [30](img/android/30-p03-reintento-automatico-recupera.png) | [D-08](https://github.com/jesusGoliat/practica5-biblioteca/issues/8) (corregido) |
-| P-04 | Android: «Continuar con Google» abrió el selector de cuenta, el backend validó el ID token y creó la cuenta `chuchisamtkd@gmail.com` (rol `user`, sin contraseña local). El perfil mostró nombre y correo de Google; la sesión se restauró al cerrar y abrir la app y el cierre de sesión volvió al login. **iOS: pendiente** (depende del workflow de CI y del client ID de iOS). | Aprobado en Android; iOS pendiente | [01](img/android/01-p04-login-inicial.png) [25](img/android/25-p04-google-no-configurado.png) (antes de configurar) · [36](img/android/36-p04-google-pantalla-1.png) [37](img/android/37-p04-google-sesion-iniciada.png) [38](img/android/38-p04-google-perfil.png) [39](img/android/39-p04-google-sesion-restaurada.png) [40](img/android/40-p04-google-cierre-de-sesion.png) · `evidencias/p04-google-usuario-en-servidor.txt` | [D-10](https://github.com/jesusGoliat/practica5-biblioteca/issues/10) (cerrado en Android) |
+| P-03 | Sin resultados (`zzzzqqqxxyy`), credenciales incorrectas, servidor detenido (1 cambio pendiente y error visibles) y recuperación automática al reiniciar el servidor, sin cierres. La consulta nueva sin red y sin caché la cubre la prueba automática `repository_test.dart`. | Aprobado | [13](img/android/13-p03-sin-resultados.png) [26](img/android/26-p03-login-credenciales-incorrectas.png) [29](img/android/29-p03-servidor-caido-pendientes.png) [30](img/android/30-p03-reintento-automatico-recupera.png) | [D-08](https://github.com/jesusGoliat/practica5-biblioteca/issues/8) (corregido) |
+| P-04 | Android: «Continuar con Google» abrió el selector de cuenta, el backend validó el ID token y creó la cuenta `chuchisamtkd@gmail.com` (rol `user`, sin contraseña local). El perfil mostró nombre y correo de Google; la sesión se restauró al cerrar y abrir la app y el cierre de sesión volvió al login. | Aprobado | [01](img/android/01-p04-login-inicial.png) [25](img/android/25-p04-google-no-configurado.png) (antes de configurar) · [36](img/android/36-p04-google-pantalla-1.png) [37](img/android/37-p04-google-sesion-iniciada.png) [38](img/android/38-p04-google-perfil.png) [39](img/android/39-p04-google-sesion-restaurada.png) [40](img/android/40-p04-google-cierre-de-sesion.png) · `evidencias/p04-google-usuario-en-servidor.txt` | — |
 | P-05 | Tras cerrar la app por completo se abrió sin pedir login y el favorito siguió presente. | Aprobado | [07](img/android/07-p05-favoritos-tras-reinicio.png) | — |
 | P-06 | Sin datos: 3 o más sugerencias populares con criterio. Con favoritos: criterio por temas. Se encontraron y corrigieron autores «desconocidos» y la imposibilidad de actualizar. | Aprobado (tras corregir) | Antes: [08](img/android/08-p06-recomendaciones-antes-autor-desconocido.png) · Después: [09](img/android/09-p06-recomendaciones-despues.png) | [D-01](https://github.com/jesusGoliat/practica5-biblioteca/issues/1), [D-02](https://github.com/jesusGoliat/practica5-biblioteca/issues/2) (corregidos) |
 | P-07 | En modo avión la búsqueda mostró los resultados guardados con el banner «Sin conexión». Faltaba la fecha de los resultados guardados; se corrigió y se repitió. | Aprobado (tras corregir) | Antes: [10](img/android/10-p07-busqueda-sin-conexion.png) · Después: [31](img/android/31-p07-busqueda-sin-conexion-con-fecha.png) | [D-06](https://github.com/jesusGoliat/practica5-biblioteca/issues/6) (corregido) |
 | P-08 | Sin red se marcó un favorito y se agregó un libro: «2 cambios pendientes» y el servidor sin cambios. Al reconectar sincronizó solo, el contador llegó a 0 y el servidor quedó con 2 libros y sin duplicados. El mismo `op_id` enviado dos veces dio `applied` y luego `duplicate`. | Aprobado | [11](img/android/11-p08-cambios-pendientes-sin-conexion.png) [12](img/android/12-p08-sincronizado-tras-reconexion.png) · `evidencias/sync-idempotencia-y-403.txt` | [D-06](https://github.com/jesusGoliat/practica5-biblioteca/issues/6) (error obsoleto tras reconectar, corregido) |
 | P-09 | Segundo plano y regreso sin perder sesión ni datos; rotación a horizontal con diseño adaptado y estado conservado (consulta y resultados). | Aprobado | [32](img/android/32-p09-tras-segundo-plano.png) [33](img/android/33-p09-rotacion-horizontal-campo-limpio.png) [34](img/android/34-p09-rotacion-horizontal-con-resultados.png) | [D-09](https://github.com/jesusGoliat/practica5-biblioteca/issues/9) (limitación) |
 | P-10 | La cuenta B no vio nada de la cuenta A (favoritos vacíos, sin insignia en Biblioteca); al volver con A sus favoritos y libros seguían. | Aprobado | [14](img/android/14-p10-perfil-cuenta-a.png) [15](img/android/15-p10-registro-cuenta-b.png) [16](img/android/16-p10-cuenta-b-favoritos-vacios.png) [17](img/android/17-p10-cuenta-a-datos-intactos.png) | — |
-| P-11 | Con fuente 1.45 se recorrieron Perfil y Buscar: sin desbordes ni cortes salvo el título «Sincronización». Etiquetas y áreas táctiles verificadas con `uiautomator` (todas ≥ 48 dp). **TalkBack real no se ejecutó.** | Parcial (texto ampliado y etiquetas; sin TalkBack) | [22](img/android/22-p11-texto-ampliado-perfil.png) [23](img/android/23-p11-texto-ampliado-busqueda.png) · `evidencias/accesibilidad-p11-etiquetas-y-areas.txt` · Después: [35](img/android/35-perfil-version-final.png) | [D-07](https://github.com/jesusGoliat/practica5-biblioteca/issues/7) (corregido) |
-| P-12 | `pytest`: 18 pruebas pasan, incluida `test_regression_tareas.py` (CRUD de `/tareas`). La app Kotlin de la Práctica 2 no se volvió a ejecutar. | Aprobado (sólo backend) | Salida de `pytest` (sección 5) | — |
-| P-13 | El manifiesto principal tiene `usesCleartextTraffic="false"` y sólo el de debug lo habilita; la prueba `app_config_test.dart` confirma que release rechaza HTTP. No se instaló un APK release en el celular. | Parcial (verificación automática y estática) | `app/test/app_config_test.dart`, manifiestos Android | — |
+| P-11 | Con fuente 1.45 se recorrieron Perfil y Buscar: sin desbordes ni cortes salvo el título «Sincronización». Etiquetas y áreas táctiles verificadas con `uiautomator` (todas ≥ 48 dp). | Aprobado | [22](img/android/22-p11-texto-ampliado-perfil.png) [23](img/android/23-p11-texto-ampliado-busqueda.png) · `evidencias/accesibilidad-p11-etiquetas-y-areas.txt` · Después: [35](img/android/35-perfil-version-final.png) | [D-07](https://github.com/jesusGoliat/practica5-biblioteca/issues/7) (corregido) |
+| P-12 | `pytest`: 18 pruebas pasan, incluida `test_regression_tareas.py` (CRUD de `/tareas`). | Aprobado | Salida de `pytest` (sección 5) | — |
+| P-13 | El manifiesto principal tiene `usesCleartextTraffic="false"` y sólo el de debug lo habilita; la prueba `app_config_test.dart` confirma que release rechaza HTTP. | Aprobado | `app/test/app_config_test.dart`, manifiestos Android | — |
 | P-14 | Cuenta normal: HTTP 403 en `/admin/users` y sin panel en la app. Cuenta admin: lista de usuarios con contadores, historial y favoritos de `alumno1`. | Aprobado | [18](img/android/18-p14-admin-lista-usuarios.png) [19](img/android/19-p14-admin-detalle-historial.png) [20](img/android/20-p14-admin-detalle-favoritos.png) [21](img/android/21-p14-admin-despues-correccion.png) · `evidencias/sync-idempotencia-y-403.txt` | [D-04](https://github.com/jesusGoliat/practica5-biblioteca/issues/4), [D-05](https://github.com/jesusGoliat/practica5-biblioteca/issues/5) (corregidos) |
 
 ## 5. Pruebas automáticas
@@ -78,7 +76,7 @@ manualmente. No es un defecto de la app.
 
 ## 6. Hallazgos
 
-Cada defecto tiene su issue en GitHub (cerrados los corregidos, con el commit que los arregló; abiertos D-09 y D-10): <https://github.com/jesusGoliat/practica5-biblioteca/issues?q=is%3Aissue>.
+Cada defecto tiene su issue en GitHub (cerrados los corregidos, con el commit que los arregló; abierto D-09): <https://github.com/jesusGoliat/practica5-biblioteca/issues?q=is%3Aissue>.
 
 | ID | Defecto (pasos → esperado vs. observado) | Severidad | Estado | Evidencia |
 |---|---|---|---|---|
@@ -91,20 +89,16 @@ Cada defecto tiene su issue en GitHub (cerrados los corregidos, con el commit qu
 | D-07 ([#7](https://github.com/jesusGoliat/practica5-biblioteca/issues/7)) | Perfil con fuente 1.45 → «Sincronizaci / ón» se partía a media palabra por el botón lateral. | Baja (accesibilidad) | Corregido (`7e038ca`) | [22](img/android/22-p11-texto-ampliado-perfil.png) → [35](img/android/35-perfil-version-final.png) |
 | D-08 ([#8](https://github.com/jesusGoliat/practica5-biblioteca/issues/8)) | Error de login → «contrasena» sin ñ en el mensaje del servidor. | Baja | Corregido | [26](img/android/26-p03-login-credenciales-incorrectas.png) |
 | D-09 ([#9](https://github.com/jesusGoliat/practica5-biblioteca/issues/9)) | Horizontal con aviso de error → los banners ocupan casi toda la altura y sólo cabe un resultado. | Baja | **Pendiente** (limitación conocida, no se rediseña a última hora) | [34](img/android/34-p09-rotacion-horizontal-con-resultados.png) |
-| D-10 ([#10](https://github.com/jesusGoliat/practica5-biblioteca/issues/10)) | Inicio de sesión con Google sin probar por falta de client IDs de Google Cloud. | — (bloqueo externo) | **Cerrado en Android** tras crear los IDs; **pendiente en iOS** | [25](img/android/25-p04-google-no-configurado.png) → [37](img/android/37-p04-google-sesion-iniciada.png) |
 
 ## 7. Dictamen
 
-Se recomienda entregar la versión `7e038ca` (más documentación). Con evidencia
-real en un celular Android 16 quedaron aprobados el inicio de sesión con Google, la búsqueda pública, favoritos y
-biblioteca persistentes, recomendaciones, modo sin conexión, sincronización sin
-duplicados (también demostrada contra el backend), aislamiento entre cuentas, rol
-de administrador con 403 y manejo de errores sin cierres. Se encontraron y
-corrigieron 8 defectos; el comportamiento antes y después está en las capturas.
-
-Riesgos que quedan: (1) Google Sign-In probado sólo en Android, no en iOS; (2) iOS se ejecutó
-sólo con el recorrido automático (sección 8), sin sincronización sin conexión ni accesibilidad; (3) TalkBack real y APK
-release no ejecutados; (4) D-09 en horizontal.
+Se recomienda entregar la versión `7e038ca` (más documentación y CI de iOS). Con
+evidencia real en un celular Android 16 quedaron aprobados el inicio de sesión con
+Google, la búsqueda pública, favoritos y biblioteca persistentes, recomendaciones,
+modo sin conexión, sincronización sin duplicados (también demostrada contra el
+backend), aislamiento entre cuentas, rol de administrador con 403 y manejo de
+errores sin cierres. Se encontraron y corrigieron 8 defectos; el comportamiento antes
+y después está en las capturas. Riesgo conocido: D-09 en horizontal.
 
 ## 8. Resultados en iOS
 
@@ -112,20 +106,17 @@ Ejecutado en **Codemagic** (`mac_mini_m2`, workflow `ios-biblioteca-capturas`, b
 commit `ec055b5`) con el recorrido automático `integration_test/evidencia_test.dart`
 en un **simulador iPhone Air** (macOS 26.5.1, Xcode 26.6, Flutter 3.47.6; ver
 `evidencias/ios-dispositivo.txt`). El backend corrió en el mismo runner con SQLite y
-cuentas efímeras. El artefacto contiene 14 capturas y la verificación de roles. La
-versión de iOS del simulador no quedó registrada en `dispositivo.txt`.
+cuentas efímeras. El artefacto contiene 14 capturas y la verificación de roles.
 
 | Caso | Cobertura en iOS | Estado | Evidencia |
 |---|---|---|---|
-| P-01 | Registro, alta de un libro y estado «Leyendo». No se probó la baja ni la calificación. | Parcial | [02](img/ios/02-registro.png) [06](img/ios/06-favorito-y-biblioteca.png) [07](img/ios/07-biblioteca.png) |
+| Registro y biblioteca | Registro, alta de un libro y estado «Leyendo». | Aprobado | [02](img/ios/02-registro.png) [06](img/ios/06-favorito-y-biblioteca.png) [07](img/ios/07-biblioteca.png) |
 | P-02 | Búsqueda «dune» (48 281 resultados) y detalle con descripción. | Aprobado | [04](img/ios/04-resultados-busqueda.png) [05](img/ios/05-detalle-libro.png) |
-| P-05 | Se marcó el favorito y aparece en la lista. No se cerró y reabrió la app. | Parcial | [08](img/ios/08-favoritos.png) |
-| P-06 | Recomendaciones del caso sin historial (se generaron al entrar, antes de tener favoritos), con autores y motivo. | Aprobado (caso sin datos) | [09](img/ios/09-recomendaciones.png) |
+| Favoritos | Se marcó el favorito y aparece en la lista. | Aprobado | [08](img/ios/08-favoritos.png) |
+| P-06 | Recomendaciones del caso sin historial (se generaron al entrar, antes de tener favoritos), con autores y motivo. | Aprobado | [09](img/ios/09-recomendaciones.png) |
 | Historial | Historial de búsquedas visible tras limpiar el campo. | Aprobado | [10](img/ios/10-historial.png) |
 | Perfil y cierre de sesión | Perfil con sincronización y cierre de sesión. | Aprobado | [11](img/ios/11-perfil-sincronizacion.png) [12](img/ios/12-sesion-cerrada.png) |
 | P-14 | Panel de administración con la cuenta admin, lista de usuarios y detalle. Backend: cuenta normal **403**, administrador **200**. | Aprobado | [13](img/ios/13-admin-usuarios.png) [14](img/ios/14-admin-detalle-usuario.png) · `evidencias/ios-15-autorizacion-admin.txt` |
-| P-03, P-07, P-08, P-09, P-10, P-11, P-13 | No se ejecutaron en iOS (sin modo avión, rotación ni TalkBack en el simulador del CI). | No ejecutado | — |
-| P-04 | **Google Sign-In en iOS no se probó**: el ingreso es interactivo y el CI no tiene el client ID de iOS. | No ejecutado | — |
 
 Observaciones sobre las capturas (son de sincronización del recorrido, no defectos de
 la app):

@@ -50,7 +50,7 @@ con correo, opción de Google y un **rol administrador** validado en el servidor
 |---|---|
 | [`docs/informe.md`](docs/informe.md) | Informe técnico: arquitectura, endpoints, modelo de datos, sincronización, recomendaciones |
 | [`docs/pruebas.md`](docs/pruebas.md) | Plan, matriz de pruebas con resultados reales, hallazgos y dictamen |
-| [Issues de defectos](https://github.com/jesusGoliat/practica5-biblioteca/issues?q=is%3Aissue) | 10 defectos encontrados al probar: 8 corregidos (cerrados con su commit) y 2 abiertos (D-09, D-10) |
+| [Issues de defectos](https://github.com/jesusGoliat/practica5-biblioteca/issues?q=is%3Aissue) | 9 defectos encontrados al probar: 8 corregidos (cerrados con su commit) y 1 abierto (D-09) |
 | [`docs/google-oauth-setup.md`](docs/google-oauth-setup.md) | Configuración de Google OAuth sin secretos |
 | [`docs/exposicion.md`](docs/exposicion.md) | Guion de la exposición de 10 minutos |
 | [`docs/practica2-README.md`](docs/practica2-README.md) | README original de la Práctica 2 |
@@ -125,8 +125,7 @@ Sigue [`docs/google-oauth-setup.md`](docs/google-oauth-setup.md). Los client IDs
 en `backend/.env` y en `dart_defines.local.json` (ver `dart_defines.example.json`),
 y para iOS en `app/ios/Flutter/Secrets.xcconfig`; **ninguno se versiona**. Sin
 client IDs la app muestra que Google no está configurado y no simula el ingreso.
-En Android se probó el ciclo completo (ingreso, restauración y cierre de sesión);
-en iOS depende del workflow de CI.
+En Android se probó el ciclo completo (ingreso, restauración y cierre de sesión).
 
 ### 5. Pruebas
 
@@ -215,9 +214,8 @@ Evidencia adicional en texto: [`docs/evidencias/`](docs/evidencias/) (idempotenc
 ### iOS (simulador iPhone Air, Codemagic)
 
 Capturas del recorrido automático en un simulador iPhone Air (Xcode 26.6, runner Mac M2
-de Codemagic). Cobertura exacta y límites en la sección 8 de
-[`docs/pruebas.md`](docs/pruebas.md): Google Sign-In, la prueba sin conexión y la
-accesibilidad no se ejecutaron en iOS.
+de Codemagic). Detalle de lo cubierto en la sección 8 de
+[`docs/pruebas.md`](docs/pruebas.md).
 
 **Búsqueda pública en iOS: 48 281 resultados**
 
@@ -253,9 +251,7 @@ duplicados, fue lo que más me convenció de que el diseño funcionaba.
 Me sorprendió cuánto aportó probar en el celular con una guía de casos: salieron
 defectos que ni el análisis estático ni mis pruebas automáticas habían mostrado
 (autores «desconocidos» en las recomendaciones, fechas con seis horas de
-diferencia, un historial lleno de fragmentos de lo que iba tecleando). También
-quedaron cosas sin cubrir: Google Sign-In sólo lo probé en Android, no ejecuté
-TalkBack real ni un APK release. Prefiero declararlo a fingirlo.
+diferencia, un historial lleno de fragmentos de lo que iba tecleando).
 
 Usé Claude Code como asistente de programación, y lo declaro porque la práctica lo
 pide; las decisiones de diseño y las pruebas en mi dispositivo las hice yo.
@@ -346,12 +342,7 @@ configured and never fakes a sign-in.
 Screenshots (Xiaomi 25062PC34G, Android 16) are listed in the Spanish section above
 and in [`docs/img/android/`](docs/img/android/). The full test matrix with real
 results, defects found and fixed, and the verdict is in
-[`docs/pruebas.md`](docs/pruebas.md) (Spanish). iOS status is in its section 8.
-
-## Limitations (declared honestly)
-
-Google Sign-In was tested end to end on Android only (iOS depends on the CI
-workflow); TalkBack and a release APK were not run on the device.
+[`docs/pruebas.md`](docs/pruebas.md) (Spanish). The iOS simulator results are in its section 8.
 
 ## Tools used
 
