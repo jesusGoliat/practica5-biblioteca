@@ -1,0 +1,14 @@
+# P-11 Accesibilidad (pantalla Buscar, fuente 1.45) — controles interactivos
+# Mínimo recomendado de área táctil: 48 dp = 48*dpi/160 px
+'Sincronizar ahora'                                              135x135px
+'dune'                                                           1012x183px
+'Borrar búsqueda'                                                135x135px
+'Portada del libro\nDune\nFrank Herbert · 1965'                  1080x255px
+'Portada del libro\nDune Messiah\nFrank Herbert · 1969'          1080x256px
+'Portada del libro\nChildren of Dune\nFrank Herbert · 1976'      1080x256px
+'Portada del libro\nGod Emperor of Dune\nFrank Herbert · 1981'   1080x114px
+'Buscar\nPestaña 1 de 5'                                         216x225px
+'Biblioteca\nPestaña 2 de 5'                                     216x225px
+'Favoritos\nPestaña 3 de 5'                                      216x225px
+'Para ti\nPestaña 4 de 5'                                        216x225px
+'Perfil\nPestaña 5 de 5'                                         216x225px

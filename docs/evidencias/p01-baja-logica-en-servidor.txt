@@ -1,0 +1,6 @@
+      ol_key      |    status    | deleted 
+------------------+--------------+---------
+ /works/OL893414W | reading      | f
+ /works/OL893461W | want_to_read | t
+(2 rows)
+

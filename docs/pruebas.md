@@ -1,9 +1,9 @@
 # Plan y matriz de pruebas — Práctica 5 (Biblioteca ESCOM)
 
-> Este documento se escribió **antes** de ejecutar las pruebas (ver historial de
-> commits). Las columnas «Resultado real», «Estado» y «Evidencia» se llenan
-> **sólo después** de ejecutar cada caso. Un caso bloqueado no cuenta como
-> ejecutado.
+> Las secciones 1 y 2 (criterios y riesgos) y la estructura de la matriz se
+> commitearon **antes** de ejecutar (commit `0a56210`). Los resultados de las
+> secciones 3 a 7 se llenaron **después**, con ejecuciones reales. Un caso
+> bloqueado no cuenta como ejecutado.
 
 ## 1. Alcance y criterios de aceptación
 
@@ -25,60 +25,94 @@
 | R-5 | JSON malformado o error de red cierra la app. | Cierre inesperado | P-03, `repository_test.dart` |
 | R-6 | Google Sign-In sin client IDs correctos falla de forma poco clara. | Acceso bloqueado | P-04 |
 
-## 3. Entorno (se completa al ejecutar)
+## 3. Entorno
 
 | Campo | Valor |
 |---|---|
 | SHA base de referencia | `79c6cde` (último commit antes de la UI de la Práctica 5) |
-| SHA probado | _pendiente_ |
-| Autor de la ejecución | Jesús Ángel González Arellano (`jesusGoliat`) |
-| Fecha | _pendiente_ |
-| Equipo de desarrollo | Linux, Flutter 3.47.6, JDK 21, Docker Compose |
-| Android | _pendiente: modelo, versión de Android/API (≥ 24), conexión por USB, sin emulador_ |
-| iOS | Simulador iPhone en GitHub Actions `macos-15` (Xcode del runner; identificado en `dispositivo.txt`) |
-| Backend | Docker Compose local (PostgreSQL 17) para Android; FastAPI + SQLite en el runner para iOS |
-| Datos | Cuentas ficticias; ninguna credencial real |
+| SHA probado | Primera pasada: `0a56210`. Correcciones y repetición de casos afectados: `b422309` y `7e038ca` (APK final). Commits posteriores sólo cambian documentación y evidencias. |
+| Autor de la ejecución | Jesús Ángel González Arellano (`jesusGoliat`), con asistencia de Claude Code para guiar el guion y tomar las capturas por `adb` |
+| Fecha | 2026-11-05, 21:48 a 22:35 (hora del dispositivo) |
+| Equipo de desarrollo | Linux, Flutter 3.47.6, JDK 21, Docker 29.8 / Compose |
+| Android | Xiaomi 25062PC34G, Android 16 (API 36), conectado por USB, **sin emulador**; APK debug de la rama |
+| iOS | Simulador iPhone en GitHub Actions `macos-15` (ver sección 5; resultados al final de este documento) |
+| Backend | Docker Compose local (PostgreSQL 17, FastAPI), accesible desde el celular con `adb reverse tcp:8000 tcp:8000` |
+| Datos | Cuentas ficticias `alumno1@`, `alumno2@` y `admin@biblioteca.test`; ninguna credencial real |
 
-## 4. Casos de prueba
+## 4. Resultados por caso
 
-Cobertura de categorías obligatorias: ruta feliz (P-01, P-02, P-05, P-06),
-alterna/límite (P-03, P-07, P-08, P-09), regresión (P-12), navegación y estado
-(P-09, P-10), accesibilidad (P-11), compatibilidad/entorno (P-13).
+Estados: **aprobado**, **fallido**, **bloqueado** (no cuenta como ejecutado) o
+**parcial** (se indica qué parte se ejecutó). Todas las capturas están en
+`docs/img/android/`.
 
-| ID | Escenario del enunciado | Criterio / riesgo | Plataforma | Pasos | Resultado esperado | Resultado real | Estado | Evidencia | Defecto |
-|---|---|---|---|---|---|---|---|---|---|
-| P-01 | Consulta REST (CRUD) | CA-1 | Android, iOS | 1. Registrar cuenta nueva. 2. Iniciar sesión. 3. Agregar un libro a la biblioteca. 4. Cambiar su estado a «Leyendo» y calificarlo. 5. Quitarlo. | Cada operación responde correctamente y la lista se actualiza. | _pendiente_ | _pendiente_ | _pendiente_ | — |
-| P-02 | Búsqueda pública | CA-1 | Android, iOS | 1. Buscar «dune». 2. Abrir el primer resultado. | Lista con portada/título/autor y tiempo de respuesta; detalle con descripción. | _pendiente_ | _pendiente_ | _pendiente_ | — |
-| P-03 | Estado vacío y error | R-5 | Android, iOS | 1. Buscar `zzzzqqqxxyy`. 2. Detener el backend y pulsar «Sincronizar ahora». 3. Con red apagada, buscar una consulta nueva. | Mensaje de «Sin resultados»; error de red visible y controlado; sin cierre de la app. | _pendiente_ | _pendiente_ | _pendiente_ | — |
-| P-04 | Acceso con Google y cierre de sesión | R-6 | Android, iOS | 1. Pulsar «Continuar con Google». 2. Cerrar sesión. 3. Reabrir la app. | Ingreso validado por el backend, sesión restaurada y cierre correcto. **Bloqueado** si faltan client IDs (se documenta, no se simula). | _pendiente_ | _pendiente_ | _pendiente_ | — |
-| P-05 | Favoritos persistentes | CA-1 | Android, iOS | 1. Marcar dos libros como favoritos. 2. Cerrar la app por completo. 3. Abrirla. | Los favoritos siguen presentes. | _pendiente_ | _pendiente_ | _pendiente_ | — |
-| P-06 | Recomendaciones | — | Android, iOS | 1. Con cuenta sin datos, abrir «Para ti» y generar. 2. Agregar favoritos y regenerar. | Al menos 3 recomendaciones, criterio visible; caso sin historial resuelto con temas populares. | _pendiente_ | _pendiente_ | _pendiente_ | — |
-| P-07 | Consulta sin conexión | CA-2 | Android | 1. Buscar «dune» con red. 2. Activar modo avión. 3. Repetir la búsqueda y abrir Favoritos, Biblioteca y «Para ti». | Resultados guardados con su fecha; banner «Sin conexión»; datos locales accesibles. | _pendiente_ | _pendiente_ | _pendiente_ | — |
-| P-08 | Reconexión y sincronización sin duplicados | CA-2, R-1, R-3 | Android | 1. En modo avión marcar un favorito y agregar un libro. 2. Observar contador de pendientes. 3. Desactivar modo avión. 4. Revisar en el backend (`/favorites`, `/library`). | Los cambios se envían una vez, el contador llega a 0 y no hay duplicados; el cambio local no se pierde. | _pendiente_ | _pendiente_ | _pendiente_ | — |
-| P-09 | Reinicio de la aplicación | CA-2 | Android | 1. Con datos y sesión, cerrar y abrir la app (sin red). 2. Rotar el dispositivo / enviar a segundo plano y volver. | Sesión restaurada y datos visibles; estado conservado. | _pendiente_ | _pendiente_ | _pendiente_ | — |
-| P-10 | Aislamiento entre usuarios | CA-4, R-2 | Android, iOS | 1. Con la cuenta A crear favoritos. 2. Cerrar sesión e ingresar con la cuenta B. | B no ve datos de A; al volver con A sus datos siguen. | _pendiente_ | _pendiente_ | _pendiente_ | — |
-| P-11 | Accesibilidad | — | Android | 1. Texto del sistema al máximo: recorrer Buscar, Biblioteca y Perfil. 2. Con TalkBack, usar el botón de favorito y la navegación inferior. | Sin desbordes; los controles tienen etiqueta y área táctil suficiente. | _pendiente_ | _pendiente_ | _pendiente_ | — |
-| P-12 | Regresión de la Práctica 2 | — | Backend | Ejecutar `pytest` (incluye `test_regression_tareas.py`) y probar `/tareas` con la app de la Práctica 2. | CRUD de tareas sin cambios. | _pendiente_ | _pendiente_ | _pendiente_ | — |
-| P-13 | Compatibilidad y entorno | R-4 | Android, iOS | 1. Instalar el APK/IPA de release: confirmar que rechaza `http://` remoto. 2. Probar con otra red (hotspot) y revisar que el repositorio no contiene secretos. | Release exige HTTPS; sin secretos en `git`. | _pendiente_ | _pendiente_ | _pendiente_ | — |
-| P-14 | Rol administrador y acceso denegado | CA-3 | Android, iOS, backend | 1. Cuenta normal: `GET /admin/users` (esperado 403) y comprobar que la app no muestra el panel. 2. Cuenta admin: abrir Perfil → Panel, ver historial y favoritos de un usuario. | 403 para cuenta normal; el administrador ve usuarios, historiales y favoritos. | _pendiente_ | _pendiente_ | _pendiente_ | — |
+| ID | Resultado real (Android) | Estado | Evidencia | Defecto |
+|---|---|---|---|---|
+| P-01 | Registro e inicio de sesión correctos. Alta del libro, estado «Leyendo» y 4 estrellas llegaron al servidor (`reading`, `rating = 4`). La baja pide confirmación y deja `deleted = t` en el servidor. | Aprobado | [02](img/android/02-p01-registro-formulario.png) [03](img/android/03-p01-sesion-iniciada-buscar.png) [06](img/android/06-p01-favorito-biblioteca-calificacion.png) [27](img/android/27-p01-biblioteca-leyendo.png) [28](img/android/28-p01-confirmar-quitar-libro.png) · `evidencias/p01-baja-logica-en-servidor.txt` | — |
+| P-02 | «dune»: 48 281 resultados en 0.8 s con portada, autor y año. El detalle trae descripción real de Open Library. | Aprobado | [04](img/android/04-p02-resultados-dune.png) [05](img/android/05-p02-detalle-dune.png) | — |
+| P-03 | Sin resultados (`zzzzqqqxxyy`), credenciales incorrectas, servidor detenido (1 cambio pendiente y error visibles) y recuperación automática al reiniciar el servidor, sin cierres. La consulta nueva sin red y sin caché sólo se cubrió con la prueba automática (`repository_test.dart`), no en el dispositivo. | Aprobado (parcial en la sub-prueba indicada) | [13](img/android/13-p03-sin-resultados.png) [26](img/android/26-p03-login-credenciales-incorrectas.png) [29](img/android/29-p03-servidor-caido-pendientes.png) [30](img/android/30-p03-reintento-automatico-recupera.png) | D-08 (corregido) |
+| P-04 | **Google: bloqueado.** Faltan los client IDs de Google Cloud; la app lo informa con un mensaje claro y no simula el ingreso. Sí se ejecutaron el cierre de sesión y la restauración de sesión tras reiniciar (ver P-05/P-09). | Bloqueado (Google); cierre y restauración de sesión aprobados | [01](img/android/01-p04-login-inicial.png) [25](img/android/25-p04-google-no-configurado.png) | D-10 (bloqueo externo) |
+| P-05 | Tras cerrar la app por completo se abrió sin pedir login y el favorito siguió presente. | Aprobado | [07](img/android/07-p05-favoritos-tras-reinicio.png) | — |
+| P-06 | Sin datos: 3 o más sugerencias populares con criterio. Con favoritos: criterio por temas. Se encontraron y corrigieron autores «desconocidos» y la imposibilidad de actualizar. | Aprobado (tras corregir) | Antes: [08](img/android/08-p06-recomendaciones-antes-autor-desconocido.png) · Después: [09](img/android/09-p06-recomendaciones-despues.png) | D-01, D-02 (corregidos) |
+| P-07 | En modo avión la búsqueda mostró los resultados guardados con el banner «Sin conexión». Faltaba la fecha de los resultados guardados; se corrigió y se repitió. | Aprobado (tras corregir) | Antes: [10](img/android/10-p07-busqueda-sin-conexion.png) · Después: [31](img/android/31-p07-busqueda-sin-conexion-con-fecha.png) | D-06 (corregido) |
+| P-08 | Sin red se marcó un favorito y se agregó un libro: «2 cambios pendientes» y el servidor sin cambios. Al reconectar sincronizó solo, el contador llegó a 0 y el servidor quedó con 2 libros y sin duplicados. El mismo `op_id` enviado dos veces dio `applied` y luego `duplicate`. | Aprobado | [11](img/android/11-p08-cambios-pendientes-sin-conexion.png) [12](img/android/12-p08-sincronizado-tras-reconexion.png) · `evidencias/sync-idempotencia-y-403.txt` | D-06 (error obsoleto tras reconectar, corregido) |
+| P-09 | Segundo plano y regreso sin perder sesión ni datos; rotación a horizontal con diseño adaptado y estado conservado (consulta y resultados). | Aprobado | [32](img/android/32-p09-tras-segundo-plano.png) [33](img/android/33-p09-rotacion-horizontal-campo-limpio.png) [34](img/android/34-p09-rotacion-horizontal-con-resultados.png) | D-09 (limitación) |
+| P-10 | La cuenta B no vio nada de la cuenta A (favoritos vacíos, sin insignia en Biblioteca); al volver con A sus favoritos y libros seguían. | Aprobado | [14](img/android/14-p10-perfil-cuenta-a.png) [15](img/android/15-p10-registro-cuenta-b.png) [16](img/android/16-p10-cuenta-b-favoritos-vacios.png) [17](img/android/17-p10-cuenta-a-datos-intactos.png) | — |
+| P-11 | Con fuente 1.45 se recorrieron Perfil y Buscar: sin desbordes ni cortes salvo el título «Sincronización». Etiquetas y áreas táctiles verificadas con `uiautomator` (todas ≥ 48 dp). **TalkBack real no se ejecutó.** | Parcial (texto ampliado y etiquetas; sin TalkBack) | [22](img/android/22-p11-texto-ampliado-perfil.png) [23](img/android/23-p11-texto-ampliado-busqueda.png) · `evidencias/accesibilidad-p11-etiquetas-y-areas.txt` · Después: [35](img/android/35-perfil-version-final.png) | D-07 (corregido) |
+| P-12 | `pytest`: 18 pruebas pasan, incluida `test_regression_tareas.py` (CRUD de `/tareas`). La app Kotlin de la Práctica 2 no se volvió a ejecutar. | Aprobado (sólo backend) | Salida de `pytest` (sección 5) | — |
+| P-13 | El manifiesto principal tiene `usesCleartextTraffic="false"` y sólo el de debug lo habilita; la prueba `app_config_test.dart` confirma que release rechaza HTTP. No se instaló un APK release en el celular. | Parcial (verificación automática y estática) | `app/test/app_config_test.dart`, manifiestos Android | — |
+| P-14 | Cuenta normal: HTTP 403 en `/admin/users` y sin panel en la app. Cuenta admin: lista de usuarios con contadores, historial y favoritos de `alumno1`. | Aprobado | [18](img/android/18-p14-admin-lista-usuarios.png) [19](img/android/19-p14-admin-detalle-historial.png) [20](img/android/20-p14-admin-detalle-favoritos.png) [21](img/android/21-p14-admin-despues-correccion.png) · `evidencias/sync-idempotencia-y-403.txt` | D-04, D-05 (corregidos) |
 
-## 5. Pruebas automáticas (complementan, no sustituyen a las manuales)
+## 5. Pruebas automáticas
 
 | Suite | Qué cubre | Resultado |
 |---|---|---|
-| `backend/tests` (pytest) | Auth, CRUD de biblioteca, favoritos, historial, `/sync` idempotente, admin 403, regresión de tareas, validaciones | _pendiente de re-ejecutar en el SHA probado_ |
-| `app/test` (flutter test) | Repositorio local-first (cola, caché, aislamiento por usuario) y validación del login | _pendiente_ |
-| `app/integration_test/evidencia_test.dart` | Recorrido completo con capturas en simulador iOS | _pendiente (GitHub Actions)_ |
+| `backend/tests` (pytest) | Auth, biblioteca, favoritos, historial, `/sync` idempotente, admin 403, regresión de tareas, contadores de admin | 18 pasan |
+| `app/test` (flutter test) | Repositorio local-first (cola, caché, aislamiento por usuario, historial), fechas UTC, autores, candado HTTPS y validación del login | 15 pasan |
+| `flutter analyze` | Análisis estático | Sin problemas |
+| `integration_test/evidencia_test.dart` en simulador iOS | Recorrido con capturas (GitHub Actions) | Ver sección 8 |
 
-## 6. Hallazgos y dictamen
+El mismo recorrido de integración se intentó en el Xiaomi con `flutter drive`, pero
+quedó detenido en la primera captura (`convertFlutterSurfaceToImage`), por lo que
+las capturas de Android se tomaron con `adb exec-out screencap` siguiendo los casos
+manualmente. No es un defecto de la app.
 
-_Se completan tras la ejecución: cada defecto con pasos reproducibles, esperado vs.
-observado, severidad justificada, evidencia, estado (corregido, preexistente o
-pendiente) y su issue sin duplicar._
+## 6. Hallazgos
 
-## 7. Contribuciones y herramientas
+| ID | Defecto (pasos → esperado vs. observado) | Severidad | Estado | Evidencia |
+|---|---|---|---|---|
+| D-01 | Recomendaciones → cada libro decía «Autor desconocido». Open Library entrega los autores del endpoint de temas como objetos `{name}` y el modelo sólo leía textos. | Media: dato incompleto en una función principal | Corregido (`b422309`) | [08](img/android/08-p06-recomendaciones-antes-autor-desconocido.png) → [09](img/android/09-p06-recomendaciones-despues.png) |
+| D-02 | Recomendaciones generadas al registrarse (sin datos) seguían diciendo «aún no tienes historial» con favoritos y no había forma de actualizarlas. | Media: criterio visible desactualizado | Corregido: botón «Actualizar» | [09](img/android/09-p06-recomendaciones-despues.png) |
+| D-03 | Buscar escribiendo «zzzzqqqxxyy» → el historial guardó `zzzx`, `zzzz`, `zzzzq`… porque la búsqueda automática también registraba. Esperado: sólo la búsqueda confirmada. | Media: historial inservible | Corregido; prueba automática | [19](img/android/19-p14-admin-detalle-historial.png) |
+| D-04 | Panel admin → «Favoritos: 3» cuando el usuario tenía 2; el contador incluía borrados lógicos. | Baja | Corregido; `test_admin.py` | [18](img/android/18-p14-admin-lista-usuarios.png) |
+| D-05 | Panel admin → historial a las «04:10» cuando eran las 22:10 locales; el servidor envía UTC sin zona. | Media: fechas erróneas | Corregido; `server_date_test.dart` | [19](img/android/19-p14-admin-detalle-historial.png) → [21](img/android/21-p14-admin-despues-correccion.png) |
+| D-06 | Sin red, los resultados guardados no mostraban su fecha; tras reconectar el aviso rojo de error seguía visible. | Baja | Corregido (leyenda de fecha y nueva consulta al sincronizar) | [10](img/android/10-p07-busqueda-sin-conexion.png), [12](img/android/12-p08-sincronizado-tras-reconexion.png) → [31](img/android/31-p07-busqueda-sin-conexion-con-fecha.png) |
+| D-07 | Perfil con fuente 1.45 → «Sincronizaci / ón» se partía a media palabra por el botón lateral. | Baja (accesibilidad) | Corregido (`7e038ca`) | [22](img/android/22-p11-texto-ampliado-perfil.png) → [35](img/android/35-perfil-version-final.png) |
+| D-08 | Error de login → «contrasena» sin ñ en el mensaje del servidor. | Baja | Corregido | [26](img/android/26-p03-login-credenciales-incorrectas.png) |
+| D-09 | Horizontal con aviso de error → los banners ocupan casi toda la altura y sólo cabe un resultado. | Baja | **Pendiente** (limitación conocida, no se rediseña a última hora) | [34](img/android/34-p09-rotacion-horizontal-con-resultados.png) |
+| D-10 | Inicio de sesión con Google no probado por falta de client IDs de Google Cloud. | — (bloqueo externo) | **Pendiente** | [25](img/android/25-p04-google-no-configurado.png) |
+
+## 7. Dictamen
+
+Se recomienda entregar la versión `7e038ca` (más documentación). Con evidencia
+real en un celular Android 16 quedaron aprobados la búsqueda pública, favoritos y
+biblioteca persistentes, recomendaciones, modo sin conexión, sincronización sin
+duplicados (también demostrada contra el backend), aislamiento entre cuentas, rol
+de administrador con 403 y manejo de errores sin cierres. Se encontraron y
+corrigieron 8 defectos; el comportamiento antes y después está en las capturas.
+
+Riesgos que quedan: (1) Google Sign-In sin probar; (2) pruebas de iOS sujetas a la
+ejecución del workflow (sección 8); (3) TalkBack real y APK release no ejecutados;
+(4) D-09 en horizontal.
+
+## 8. Resultados en iOS
+
+_Se llenan con la ejecución del workflow `.github/workflows/ios.yml`; si no se
+logra ejecutar, se declara aquí como bloqueado y no se reporta como probado._
+
+## 9. Contribuciones y herramientas
 
 - Autoría: Jesús Ángel González Arellano (`jesusGoliat`), integrante único.
 - Herramientas de IA utilizadas: Claude Code (asistente de programación) para
-  escribir y revisar código y documentación; la ejecución de pruebas en
-  dispositivos y la publicación del repositorio las realiza el autor.
+  escribir código, pruebas y documentación y para guiar la ejecución de la
+  matriz; las acciones en el dispositivo y la publicación del repositorio las
+  realiza el autor.

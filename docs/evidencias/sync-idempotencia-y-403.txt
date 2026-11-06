@@ -1,0 +1,10 @@
+# Idempotencia de POST /sync (mismo op_id enviado dos veces)
+op_id=46b7600e-3b95-476f-b82c-837cc97cccfb
+-- Primer envío:
+applied 46b7600e-3b95-476f-b82c-837cc97cccfb
+-- Reintento (simula corte de red tras aplicar):
+duplicate 46b7600e-3b95-476f-b82c-837cc97cccfb
+-- Favoritos de la cuenta con ese ol_key:
+1
+-- 403 con cuenta normal en /admin/users:
+HTTP 403
