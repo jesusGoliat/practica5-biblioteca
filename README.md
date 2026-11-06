@@ -122,6 +122,8 @@ Sigue [`docs/google-oauth-setup.md`](docs/google-oauth-setup.md). Los client IDs
 en `backend/.env` y en `dart_defines.local.json` (ver `dart_defines.example.json`),
 y para iOS en `app/ios/Flutter/Secrets.xcconfig`; **ninguno se versiona**. Sin
 client IDs la app muestra que Google no está configurado y no simula el ingreso.
+En Android se probó el ciclo completo (ingreso, restauración y cierre de sesión);
+en iOS depende del workflow de CI.
 
 ### 5. Pruebas
 
@@ -194,9 +196,11 @@ Todas las capturas son de un **Xiaomi 25062PC34G, Android 16**, tomadas con
 
 ![Panel de administración](docs/img/android/21-p14-admin-despues-correccion.png)
 
-**Google Sign-In bloqueado por falta de client IDs, sin simular el ingreso (P-04)**
+**Inicio de sesión con Google validado por el backend (P-04)**
 
-![Google no configurado](docs/img/android/25-p04-google-no-configurado.png)
+![Selector de Google](docs/img/android/36-p04-google-pantalla-1.png)
+
+![Sesión iniciada con Google](docs/img/android/38-p04-google-perfil.png)
 
 **Texto ampliado (escala 1.45) en Perfil (P-11)**
 
@@ -224,8 +228,8 @@ Me sorprendió cuánto aportó probar en el celular con una guía de casos: sali
 defectos que ni el análisis estático ni mis pruebas automáticas habían mostrado
 (autores «desconocidos» en las recomendaciones, fechas con seis horas de
 diferencia, un historial lleno de fragmentos de lo que iba tecleando). También
-quedaron cosas sin cubrir: no pude probar Google Sign-In porque faltan los client
-IDs y no ejecuté TalkBack real. Prefiero declararlo a fingirlo.
+quedaron cosas sin cubrir: Google Sign-In sólo lo probé en Android, no ejecuté
+TalkBack real ni un APK release. Prefiero declararlo a fingirlo.
 
 Usé Claude Code como asistente de programación, y lo declaro porque la práctica lo
 pide; las decisiones de diseño y las pruebas en mi dispositivo las hice yo.
@@ -318,8 +322,8 @@ results, defects found and fixed, and the verdict is in
 
 ## Limitations (declared honestly)
 
-Google Sign-In could not be tested (Google Cloud client IDs missing); TalkBack and a
-release APK were not run on the device; iOS evidence depends on the CI workflow.
+Google Sign-In was tested end to end on Android only (iOS depends on the CI
+workflow); TalkBack and a release APK were not run on the device.
 
 ## Tools used
 

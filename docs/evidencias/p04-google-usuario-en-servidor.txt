@@ -1,0 +1,5 @@
+ id |        username        | role | sin_password_local 
+----+------------------------+------+--------------------
+  4 | chuchisamtkd@gmail.com | user | t
+(1 row)
+

@@ -113,9 +113,9 @@ guarda el motivo que se muestra en pantalla. Se persisten para consultarlas sin 
 ## 8. Resultados
 
 La matriz completa está en [`pruebas.md`](pruebas.md). En un Xiaomi 25062PC34G con
-Android 16 (API 36) se ejecutaron 14 casos: 11 aprobados, 2 parciales (accesibilidad
-sin TalkBack y verificación estática de HTTPS en release) y 1 bloqueado (Google
-Sign-In, por falta de client IDs). Resultados destacados:
+Android 16 (API 36) se ejecutaron 14 casos: 12 aprobados y 2 parciales (accesibilidad
+sin TalkBack y verificación estática de HTTPS en release). Google Sign-In se probó
+de punta a punta en Android; en iOS queda sujeto al workflow de CI. Resultados destacados:
 
 - Búsqueda pública: 48 281 resultados en 0.8 s con portada, autor y año; detalle con
   descripción real.
@@ -142,8 +142,8 @@ lógica en un repositorio local-first permitió probarla con SQLite en memoria s
 dispositivo. Las pruebas guiadas en un celular real encontraron defectos que las
 pruebas automáticas no veían (autores faltantes, fechas desfasadas por la zona
 horaria, historial con fragmentos tecleados), por lo que ambas son necesarias.
-Limitaciones: Google Sign-In no pudo probarse, TalkBack y el APK release no se
-ejecutaron en el dispositivo, y la evidencia de iOS depende del workflow de CI.
+Limitaciones: Google Sign-In se probó sólo en Android, TalkBack y el APK release no
+se ejecutaron en el dispositivo, y la evidencia de iOS depende del workflow de CI.
 
 ## 10. Herramientas de IA utilizadas
 

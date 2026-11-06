@@ -23,34 +23,7 @@
 | R-3 | La descarga (pull) sobrescribe cambios locales aún no enviados. | Pérdida de cambios offline | P-08 |
 | R-4 | Tráfico HTTP en release o secretos en el repositorio. | Incumple el enunciado (HTTPS, sin secretos) | P-13 |
 | R-5 | JSON malformado o error de red cierra la app. | Cierre inesperado | P-03, `repository_test.dart` |
-| R-6 | Google Sign-In sin client IDs correctos falla de forma poco clara. | Acceso bloqueado | P-04 |
-
-## 3. Entorno
-
-| Campo | Valor |
-|---|---|
-| SHA base de referencia | `79c6cde` (último commit antes de la UI de la Práctica 5) |
-| SHA probado | Primera pasada: `0a56210`. Correcciones y repetición de casos afectados: `b422309` y `7e038ca` (APK final). Commits posteriores sólo cambian documentación y evidencias. |
-| Autor de la ejecución | Jesús Ángel González Arellano (`jesusGoliat`), con asistencia de Claude Code para guiar el guion y tomar las capturas por `adb` |
-| Fecha | 2026-11-05, 21:48 a 22:35 (hora del dispositivo) |
-| Equipo de desarrollo | Linux, Flutter 3.47.6, JDK 21, Docker 29.8 / Compose |
-| Android | Xiaomi 25062PC34G, Android 16 (API 36), conectado por USB, **sin emulador**; APK debug de la rama |
-| iOS | Simulador iPhone en GitHub Actions `macos-15` (ver sección 5; resultados al final de este documento) |
-| Backend | Docker Compose local (PostgreSQL 17, FastAPI), accesible desde el celular con `adb reverse tcp:8000 tcp:8000` |
-| Datos | Cuentas ficticias `alumno1@`, `alumno2@` y `admin@biblioteca.test`; ninguna credencial real |
-
-## 4. Resultados por caso
-
-Estados: **aprobado**, **fallido**, **bloqueado** (no cuenta como ejecutado) o
-**parcial** (se indica qué parte se ejecutó). Todas las capturas están en
-`docs/img/android/`.
-
-| ID | Resultado real (Android) | Estado | Evidencia | Defecto |
-|---|---|---|---|---|
-| P-01 | Registro e inicio de sesión correctos. Alta del libro, estado «Leyendo» y 4 estrellas llegaron al servidor (`reading`, `rating = 4`). La baja pide confirmación y deja `deleted = t` en el servidor. | Aprobado | [02](img/android/02-p01-registro-formulario.png) [03](img/android/03-p01-sesion-iniciada-buscar.png) [06](img/android/06-p01-favorito-biblioteca-calificacion.png) [27](img/android/27-p01-biblioteca-leyendo.png) [28](img/android/28-p01-confirmar-quitar-libro.png) · `evidencias/p01-baja-logica-en-servidor.txt` | — |
-| P-02 | «dune»: 48 281 resultados en 0.8 s con portada, autor y año. El detalle trae descripción real de Open Library. | Aprobado | [04](img/android/04-p02-resultados-dune.png) [05](img/android/05-p02-detalle-dune.png) | — |
-| P-03 | Sin resultados (`zzzzqqqxxyy`), credenciales incorrectas, servidor detenido (1 cambio pendiente y error visibles) y recuperación automática al reiniciar el servidor, sin cierres. La consulta nueva sin red y sin caché sólo se cubrió con la prueba automática (`repository_test.dart`), no en el dispositivo. | Aprobado (parcial en la sub-prueba indicada) | [13](img/android/13-p03-sin-resultados.png) [26](img/android/26-p03-login-credenciales-incorrectas.png) [29](img/android/29-p03-servidor-caido-pendientes.png) [30](img/android/30-p03-reintento-automatico-recupera.png) | D-08 (corregido) |
-| P-04 | **Google: bloqueado.** Faltan los client IDs de Google Cloud; la app lo informa con un mensaje claro y no simula el ingreso. Sí se ejecutaron el cierre de sesión y la restauración de sesión tras reiniciar (ver P-05/P-09). | Bloqueado (Google); cierre y restauración de sesión aprobados | [01](img/android/01-p04-login-inicial.png) [25](img/android/25-p04-google-no-configurado.png) | D-10 (bloqueo externo) |
+| R-6 | Google Sign-In sin client IDs correctos falla de forma poco clara. | Acceso bloqueado | P-04 | Android: «Continuar con Google» abrió el selector de cuenta, el backend validó el ID token y creó la cuenta `chuchisamtkd@gmail.com` (rol `user`, sin contraseña local). El perfil mostró nombre y correo de Google; la sesión se restauró al cerrar y abrir la app y el cierre de sesión volvió al login. **iOS: pendiente** (depende del workflow de CI y del client ID de iOS). | Aprobado en Android; iOS pendiente | [01](img/android/01-p04-login-inicial.png) [25](img/android/25-p04-google-no-configurado.png) (antes de configurar) · [36](img/android/36-p04-google-pantalla-1.png) [37](img/android/37-p04-google-sesion-iniciada.png) [38](img/android/38-p04-google-perfil.png) [39](img/android/39-p04-google-sesion-restaurada.png) [40](img/android/40-p04-google-cierre-de-sesion.png) · `evidencias/p04-google-usuario-en-servidor.txt` | D-10 (cerrado en Android) |
 | P-05 | Tras cerrar la app por completo se abrió sin pedir login y el favorito siguió presente. | Aprobado | [07](img/android/07-p05-favoritos-tras-reinicio.png) | — |
 | P-06 | Sin datos: 3 o más sugerencias populares con criterio. Con favoritos: criterio por temas. Se encontraron y corrigieron autores «desconocidos» y la imposibilidad de actualizar. | Aprobado (tras corregir) | Antes: [08](img/android/08-p06-recomendaciones-antes-autor-desconocido.png) · Después: [09](img/android/09-p06-recomendaciones-despues.png) | D-01, D-02 (corregidos) |
 | P-07 | En modo avión la búsqueda mostró los resultados guardados con el banner «Sin conexión». Faltaba la fecha de los resultados guardados; se corrigió y se repitió. | Aprobado (tras corregir) | Antes: [10](img/android/10-p07-busqueda-sin-conexion.png) · Después: [31](img/android/31-p07-busqueda-sin-conexion-con-fecha.png) | D-06 (corregido) |
@@ -89,20 +62,20 @@ manualmente. No es un defecto de la app.
 | D-07 | Perfil con fuente 1.45 → «Sincronizaci / ón» se partía a media palabra por el botón lateral. | Baja (accesibilidad) | Corregido (`7e038ca`) | [22](img/android/22-p11-texto-ampliado-perfil.png) → [35](img/android/35-perfil-version-final.png) |
 | D-08 | Error de login → «contrasena» sin ñ en el mensaje del servidor. | Baja | Corregido | [26](img/android/26-p03-login-credenciales-incorrectas.png) |
 | D-09 | Horizontal con aviso de error → los banners ocupan casi toda la altura y sólo cabe un resultado. | Baja | **Pendiente** (limitación conocida, no se rediseña a última hora) | [34](img/android/34-p09-rotacion-horizontal-con-resultados.png) |
-| D-10 | Inicio de sesión con Google no probado por falta de client IDs de Google Cloud. | — (bloqueo externo) | **Pendiente** | [25](img/android/25-p04-google-no-configurado.png) |
+| D-10 | Inicio de sesión con Google sin probar por falta de client IDs de Google Cloud. | — (bloqueo externo) | **Cerrado en Android** tras crear los IDs; **pendiente en iOS** | [25](img/android/25-p04-google-no-configurado.png) → [37](img/android/37-p04-google-sesion-iniciada.png) |
 
 ## 7. Dictamen
 
 Se recomienda entregar la versión `7e038ca` (más documentación). Con evidencia
-real en un celular Android 16 quedaron aprobados la búsqueda pública, favoritos y
+real en un celular Android 16 quedaron aprobados el inicio de sesión con Google, la búsqueda pública, favoritos y
 biblioteca persistentes, recomendaciones, modo sin conexión, sincronización sin
 duplicados (también demostrada contra el backend), aislamiento entre cuentas, rol
 de administrador con 403 y manejo de errores sin cierres. Se encontraron y
 corrigieron 8 defectos; el comportamiento antes y después está en las capturas.
 
-Riesgos que quedan: (1) Google Sign-In sin probar; (2) pruebas de iOS sujetas a la
-ejecución del workflow (sección 8); (3) TalkBack real y APK release no ejecutados;
-(4) D-09 en horizontal.
+Riesgos que quedan: (1) Google Sign-In probado sólo en Android, no en iOS; (2) pruebas
+de iOS sujetas a la ejecución del workflow (sección 8); (3) TalkBack real y APK
+release no ejecutados; (4) D-09 en horizontal.
 
 ## 8. Resultados en iOS
 
