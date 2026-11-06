@@ -111,4 +111,13 @@ void main() {
     await repo.addHistory('emma');
     expect((await repo.history()).map((h) => h.query), ['emma', 'dune']);
   });
+
+  test('la búsqueda automática (sin confirmar) no se guarda en el historial', () async {
+    final repo = _repo()..userId = 1;
+    await expectLater(
+      repo.search('dun', recordHistory: false),
+      throwsA(isA<ApiException>()),
+    );
+    expect(await repo.history(), isEmpty);
+  });
 }

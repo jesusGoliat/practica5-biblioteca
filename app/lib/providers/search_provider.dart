@@ -37,10 +37,15 @@ class SearchProvider extends ChangeNotifier {
       notifyListeners();
       return;
     }
-    _debounce = Timer(const Duration(milliseconds: 500), () => search(value));
+    _debounce = Timer(
+      const Duration(milliseconds: 500),
+      () => search(value, recordHistory: false),
+    );
   }
 
-  Future<void> search(String value) async {
+  /// La búsqueda automática al teclear no se guarda en el historial; sólo la
+  /// que el usuario confirma (lupa del teclado o una entrada del historial).
+  Future<void> search(String value, {bool recordHistory = true}) async {
     final q = value.trim();
     if (q.isEmpty) return;
     query = q;
@@ -49,7 +54,7 @@ class SearchProvider extends ChangeNotifier {
     error = null;
     notifyListeners();
     try {
-      final outcome = await repository.search(q);
+      final outcome = await repository.search(q, recordHistory: recordHistory);
       if (token != _token) return;
       results = outcome.books;
       total = outcome.total;

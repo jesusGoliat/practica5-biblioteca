@@ -33,3 +33,20 @@ def test_usuario_normal_recibe_403(api, user_token):
 
 def test_sin_token_recibe_401(api):
     assert api.get("/admin/users").status_code == 401
+
+
+def test_contadores_del_admin_excluyen_borrados_logicos(api, admin_token):
+    create_user(username="bea@biblioteca.test")
+    token = login(api, username="bea@biblioteca.test")
+    headers = _auth_headers(token)
+    for favorite in (True, False):
+        response = api.put(
+            "/favorites",
+            json={"ol_key": "/works/OL7W", "title": "Libro", "favorite": favorite},
+            headers=headers,
+        )
+        assert response.status_code == 200, response.text
+
+    users = api.get("/admin/users", headers=_auth_headers(admin_token)).json()
+    target = next(u for u in users if u["username"] == "bea@biblioteca.test")
+    assert target["favorites"] == 0

@@ -67,7 +67,7 @@ class _SearchScreenState extends State<SearchScreen> {
             s.error!,
             onRetry: () => context.read<SearchProvider>().search(s.query),
           ),
-        if (s.hasSearched && s.error == null && s.fetchedAt != null)
+        if (s.hasSearched && s.fetchedAt != null && (s.error == null || s.fromCache))
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: Align(

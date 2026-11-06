@@ -33,6 +33,9 @@ void main() {
       await library.load();
       await favorites.load();
       await search.loadHistory();
+      if (search.error != null && search.query.trim().isNotEmpty && !search.isLoading) {
+        await search.search(search.query, recordHistory: false);
+      }
     },
   );
   final auth = AuthProvider(api: api, repository: repository);

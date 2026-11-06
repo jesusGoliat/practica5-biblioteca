@@ -35,10 +35,25 @@ class RecommendationsScreen extends StatelessWidget {
                     ),
                     Text(data.criterion),
                     const SizedBox(height: 4),
-                    Text(
-                      '${data.fromCache ? 'Guardadas' : 'Generadas'}: '
-                      '${formatDateTime(data.generatedAt)}',
-                      style: Theme.of(context).textTheme.bodySmall,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '${data.fromCache ? 'Guardadas' : 'Generadas'}: '
+                            '${formatDateTime(data.generatedAt)}',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                        ),
+                        TextButton.icon(
+                          key: const Key('refresh-recommendations'),
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Actualizar'),
+                          onPressed: p.isLoading
+                              ? null
+                              : () =>
+                                  context.read<RecommendationsProvider>().load(),
+                        ),
+                      ],
                     ),
                   ],
                 ),

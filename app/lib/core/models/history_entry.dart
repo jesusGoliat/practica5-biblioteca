@@ -1,3 +1,5 @@
+import 'server_date.dart';
+
 class HistoryEntry {
   const HistoryEntry({
     required this.id,
@@ -12,7 +14,7 @@ class HistoryEntry {
   factory HistoryEntry.fromJson(Map<String, dynamic> json) => HistoryEntry(
     id: json['id'] as String,
     query: json['query'] as String,
-    createdAt: DateTime.parse(json['created_at'] as String),
+    createdAt: parseServerDate(json['created_at'] as String),
   );
 
   Map<String, dynamic> toJson() => {

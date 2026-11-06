@@ -1,3 +1,5 @@
+import 'server_date.dart';
+
 class FavoriteBook {
   const FavoriteBook({
     required this.olKey,
@@ -26,8 +28,8 @@ class FavoriteBook {
     title: json['title'] as String,
     author: json['author'] as String?,
     coverId: json['cover_id'] as int?,
-    createdAt: DateTime.parse(json['created_at'] as String),
-    updatedAt: DateTime.parse(json['updated_at'] as String),
+    createdAt: parseServerDate(json['created_at'] as String),
+    updatedAt: parseServerDate(json['updated_at'] as String),
     deleted: (json['deleted'] as bool?) ?? false,
   );
 

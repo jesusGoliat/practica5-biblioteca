@@ -1,3 +1,5 @@
+import 'server_date.dart';
+
 class LibraryItem {
   const LibraryItem({
     required this.publicId,
@@ -64,8 +66,8 @@ class LibraryItem {
     status: (json['status'] as String?) ?? 'want_to_read',
     rating: json['rating'] as int?,
     notes: json['notes'] as String?,
-    createdAt: DateTime.parse(json['created_at'] as String),
-    updatedAt: DateTime.parse(json['updated_at'] as String),
+    createdAt: parseServerDate(json['created_at'] as String),
+    updatedAt: parseServerDate(json['updated_at'] as String),
     deleted: (json['deleted'] as bool?) ?? false,
   );
 

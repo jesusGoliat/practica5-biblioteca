@@ -37,7 +37,7 @@ class Book {
 
     final authors = <String>[
       ...?_asStringList(json['author_name']),
-      ...?_asStringList(json['authors']),
+      ...?_authorNames(json['authors']),
     ];
     if (authors.isEmpty) {
       final author = _asString(json['author']);
@@ -86,6 +86,21 @@ class Book {
     if (value is num) return value.toInt();
     if (value is String) return int.tryParse(value);
     return null;
+  }
+
+  /// `authors` llega como textos (búsqueda) o como objetos `{name: ...}` (temas).
+  static List<String>? _authorNames(Object? value) {
+    if (value is! List) return _asStringList(value);
+    final names = <String>[];
+    for (final item in value) {
+      if (item is String && item.trim().isNotEmpty) {
+        names.add(item.trim());
+      } else if (item is Map && item['name'] is String) {
+        final name = (item['name'] as String).trim();
+        if (name.isNotEmpty) names.add(name);
+      }
+    }
+    return names;
   }
 
   static List<String>? _asStringList(Object? value) {

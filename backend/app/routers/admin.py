@@ -22,11 +22,10 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 
 
 def _count(session: Session, model, user_id: int) -> int:
-    return int(
-        session.exec(
-            select(func.count()).select_from(model).where(model.user_id == user_id)
-        ).one()
-    )
+    query = select(func.count()).select_from(model).where(model.user_id == user_id)
+    if hasattr(model, "deleted"):
+        query = query.where(model.deleted == False)  # noqa: E712 - borrado lógico
+    return int(session.exec(query).one())
 
 
 @router.get("/users", response_model=list[AdminUserRead])

@@ -93,7 +93,11 @@ class Repository {
   String _now() => DateTime.now().toUtc().toIso8601String();
 
   // --- Búsqueda con caché ---------------------------------------------------
-  Future<SearchOutcome> search(String query, {int page = 1}) async {
+  Future<SearchOutcome> search(
+    String query, {
+    int page = 1,
+    bool recordHistory = true,
+  }) async {
     final q = query.trim();
     final key = q.toLowerCase();
     SearchOutcome outcome;
@@ -112,12 +116,12 @@ class Repository {
     } on ApiException catch (error) {
       final cached = await _readSearchCache(key, page, error);
       if (cached == null) {
-        await addHistory(q);
+        if (recordHistory) await addHistory(q);
         rethrow;
       }
       outcome = cached;
     }
-    await addHistory(q);
+    if (recordHistory) await addHistory(q);
     return outcome;
   }
 
